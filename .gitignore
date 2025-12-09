@@ -1,0 +1,28 @@
+# Virtual envs
+.venv/
+venv/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.swp
+
+# IDEs
+.vscode/
+.idea/
+
+# Database, uploads e arquivos sensíveis
+instance/
+site_estagios.db
+*.db
+uploads/
+
+# OS arquivos
+Thumbs.db
+.DS_Store
+
+# Env files
+.env
+.env.local
