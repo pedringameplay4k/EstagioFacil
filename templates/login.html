@@ -478,17 +478,26 @@
         document.getElementById('option' + tipo.charAt(0).toUpperCase() + tipo.slice(1)).classList.add('active');
         tipoInput.value = tipo;
         
-        // Alterar placeholder do email baseado no tipo
+        // Alterar placeholder
         const emailInput = document.getElementById('email');
-        if (tipo === 'aluno') {
-            emailInput.placeholder = 'seu.email@exemplo.com';
-        } else if (tipo === 'empresa') {
-            emailInput.placeholder = 'empresa@email.com';
-        } else {
-            emailInput.placeholder = 'admin@portal.com';
-        }
+        if (tipo === 'aluno') emailInput.placeholder = 'seu.email@exemplo.com';
+        else if (tipo === 'empresa') emailInput.placeholder = 'empresa@email.com';
+        else emailInput.placeholder = 'admin@portal.com';
     }
     
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        const btnText = document.getElementById('btnText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Apenas muda o visual, mas DEIXA o formulário ser enviado para o Python
+        btnText.textContent = 'Entrando...';
+        loadingSpinner.classList.remove('hidden');
+        submitBtn.disabled = true;
+    });
+
+
+        
     // Mostrar alertas personalizados
     function showAlert(message, type) {
         const alertContainer = document.getElementById('alertContainer');
@@ -510,6 +519,11 @@
             alertDiv.remove();
         }, 5000);
     }
+
+    setTimeout(() => {
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => alert.remove());
+    }, 5000);
     
     // Manipular envio do formulário
     document.getElementById('loginForm').addEventListener('submit', function(e) {

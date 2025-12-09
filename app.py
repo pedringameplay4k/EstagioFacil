@@ -49,17 +49,11 @@ def allowed_file(filename):
 
 @app.route('/')
 def home():
-    # Se já estiver logado, redireciona conforme tipo
-    if 'user_id' in session:
-        if session['user_type'] == 'admin':
-            return redirect(url_for('admin_dashboard'))
-        elif session['user_type'] == 'empresa':
-            return redirect(url_for('empresa_dashboard'))
-        else:  # aluno
-            return redirect(url_for('vagas'))
+    # Pega o nome do usuário se estiver logado, senão retorna None
+    user_name = session.get('user_name') if 'user_id' in session else None
     
-    # Se não estiver logado, mostra página inicial
-    return render_template('index.html')
+    # Renderiza o index.html (que agora tem o código das vagas)
+    return render_template('index.html', user_name=user_name, session=session)
 
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
@@ -143,67 +137,24 @@ def login():
         senha = request.form.get('senha')
         tipo_usuario = request.form.get('tipo_usuario')
         
-        # Busca usuário no banco
         usuario = Usuario.query.filter_by(email=email, tipo=tipo_usuario).first()
         
-        if usuario:
-            # Verifica a senha com hash
-            if check_password_hash(usuario.senha, senha):
-                # Cria sessão
-                session['user_id'] = usuario.id
-                session['user_type'] = usuario.tipo
-                session['user_email'] = usuario.email
-                session['user_name'] = usuario.nome
-                
-                # Mensagem de boas-vindas
-                flash(f'Bem-vindo(a), {usuario.nome}!', 'success')
-                
-                # Redireciona conforme tipo
-                if usuario.tipo == 'admin':
-                    return redirect(url_for('admin_dashboard'))
-                elif usuario.tipo == 'empresa':
-                    return redirect(url_for('empresa_dashboard'))
-                else:  # aluno
-                    return redirect(url_for('vagas'))
-            else:
-                flash('Senha incorreta.', 'error')
+        if usuario and check_password_hash(usuario.senha, senha):
+            session['user_id'] = usuario.id
+            session['user_type'] = usuario.tipo
+            session['user_email'] = usuario.email
+            session['user_name'] = usuario.nome
+            
+            flash(f'Bem-vindo(a), {usuario.nome}!', 'success')
+            
+            # MUDANÇA AQUI: Todo mundo vai para a HOME (Lista de Vagas)
+            # O Admin vai para lá também, mas terá o botão "Painel Admin" no topo
+            return redirect(url_for('home'))
+            
         else:
-            flash('Usuário não encontrado.', 'error')
-        
-        return redirect(url_for('login'))
-    
+            flash('Login inválido.', 'error')
+            
     return render_template('login.html')
-
-@app.route('/admin/dashboard')
-def admin_dashboard():
-    # Verifica se o usuário está logado e é admin
-    if 'user_type' not in session or session['user_type'] != 'admin':
-        flash('Acesso não autorizado. Faça login como administrador.', 'warning')
-        return redirect(url_for('login'))
-    
-    # Coleta dados para o dashboard
-    total_usuarios = Usuario.query.count()
-    total_alunos = Usuario.query.filter_by(tipo='aluno').count()
-    total_empresas = Usuario.query.filter_by(tipo='empresa').count()
-    total_admins = Usuario.query.filter_by(tipo='admin').count()
-    
-    # Últimos usuários cadastrados
-    ultimos_usuarios = Usuario.query.order_by(Usuario.data_criacao.desc()).limit(10).all()
-    
-    # Estatísticas por tipo
-    usuarios_por_tipo = {
-        'alunos': total_alunos,
-        'empresas': total_empresas,
-        'admins': total_admins
-    }
-    
-    return render_template('admin_dashboard.html', 
-                         total_usuarios=total_usuarios,
-                         total_alunos=total_alunos,
-                         total_empresas=total_empresas,
-                         usuarios_por_tipo=usuarios_por_tipo,
-                         ultimos_usuarios=ultimos_usuarios,
-                         user_name=session.get('user_name'))
 
 @app.route('/empresa/dashboard')
 def empresa_dashboard():
@@ -236,6 +187,36 @@ def vagas():
                          user_name=user_name,
                          user_type=user_type,
                          logged_in='user_id' in session)
+
+@app.route('/admin/dashboard')
+def admin_dashboard():
+    # 1. Proteção: Só entra se for admin
+    if 'user_type' not in session or session['user_type'] != 'admin':
+        flash('Área restrita.', 'warning')
+        return redirect(url_for('home'))
+    
+    try:
+        total_usuarios = Usuario.query.count()
+        total_alunos = Usuario.query.filter_by(tipo='aluno').count()
+        total_empresas = Usuario.query.filter_by(tipo='empresa').count()
+        
+        # Pega os 5 usuários mais recentes
+        ultimos_usuarios = Usuario.query.order_by(Usuario.data_criacao.desc()).limit(5).all()
+        
+    except Exception as e:
+        print(f"Erro ao buscar dados: {e}")
+        total_usuarios = 0
+        total_alunos = 0
+        total_empresas = 0
+        ultimos_usuarios = []
+
+    # 3. Envia os dados para o HTML (Servindo a mesa)
+    return render_template('admin_dashboard.html', 
+                         user_name=session.get('user_name'), # Resolve o "Olá, None"
+                         total_usuarios=total_usuarios,      # Preenche o card azul
+                         total_alunos=total_alunos,          # Preenche o card verde
+                         total_empresas=total_empresas,      # Preenche o card laranja
+                         ultimos_usuarios=ultimos_usuarios)  # Preenche a tabela
 
 @app.route('/logout')
 def logout():
