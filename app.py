@@ -3,7 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 import os
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from sqlalchemy import text
 
 # Configuração inicial do aplicativo
 app = Flask(__name__)
@@ -37,7 +37,9 @@ class Usuario(db.Model):
     cnpj = db.Column(db.String(20), nullable=True)
     endereco = db.Column(db.String(200), nullable=True)
     
-    # REMOVEMOS as colunas data_criacao e data_atualizacao para compatibilidade
+    # Colunas de timestamp
+    data_criacao = db.Column(db.DateTime, server_default=db.func.now())
+    data_atualizacao = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
 # Função auxiliar para verificar extensão do ficheiro
 def allowed_file(filename):
@@ -72,7 +74,7 @@ def cadastro():
         # Verificar se email já existe
         usuario_existente = Usuario.query.filter_by(email=email).first()
         if usuario_existente:
-            flash('Erro: Este email já está registrado!')
+            flash('Erro: Este email já está registrado!', 'error')
             return redirect(url_for('cadastro'))
 
         # Lógica para ALUNO
@@ -82,7 +84,7 @@ def cadastro():
             # Verificar se CPF já existe
             usuario_existente = Usuario.query.filter_by(cpf=cpf).first()
             if usuario_existente:
-                flash('Erro: Este CPF já está registrado!')
+                flash('Erro: Este CPF já está registrado!', 'error')
                 return redirect(url_for('cadastro'))
 
             # Upload do Currículo
@@ -112,7 +114,7 @@ def cadastro():
             if cnpj:
                 usuario_existente = Usuario.query.filter_by(cnpj=cnpj).first()
                 if usuario_existente:
-                    flash('Erro: Este CNPJ já está registrado!')
+                    flash('Erro: Este CNPJ já está registrado!', 'error')
                     return redirect(url_for('cadastro'))
             
             novo_usuario = Usuario(
@@ -129,7 +131,7 @@ def cadastro():
         db.session.add(novo_usuario)
         db.session.commit()
         
-        flash('Cadastro realizado com sucesso! Faça login para acessar sua conta.')
+        flash('Cadastro realizado com sucesso! Faça login para acessar sua conta.', 'success')
         return redirect(url_for('login'))
 
     return render_template('cadastro.html')
@@ -154,7 +156,7 @@ def login():
                 session['user_name'] = usuario.nome
                 
                 # Mensagem de boas-vindas
-                flash(f'Bem-vindo(a), {usuario.nome}!')
+                flash(f'Bem-vindo(a), {usuario.nome}!', 'success')
                 
                 # Redireciona conforme tipo
                 if usuario.tipo == 'admin':
@@ -164,9 +166,9 @@ def login():
                 else:  # aluno
                     return redirect(url_for('vagas'))
             else:
-                flash('Senha incorreta.')
+                flash('Senha incorreta.', 'error')
         else:
-            flash('Usuário não encontrado.')
+            flash('Usuário não encontrado.', 'error')
         
         return redirect(url_for('login'))
     
@@ -176,7 +178,7 @@ def login():
 def admin_dashboard():
     # Verifica se o usuário está logado e é admin
     if 'user_type' not in session or session['user_type'] != 'admin':
-        flash('Acesso não autorizado. Faça login como administrador.')
+        flash('Acesso não autorizado. Faça login como administrador.', 'warning')
         return redirect(url_for('login'))
     
     # Coleta dados para o dashboard
@@ -185,8 +187,8 @@ def admin_dashboard():
     total_empresas = Usuario.query.filter_by(tipo='empresa').count()
     total_admins = Usuario.query.filter_by(tipo='admin').count()
     
-    # Últimos usuários cadastrados (sem ordenar por data_criacao)
-    ultimos_usuarios = Usuario.query.order_by(Usuario.id.desc()).limit(10).all()
+    # Últimos usuários cadastrados
+    ultimos_usuarios = Usuario.query.order_by(Usuario.data_criacao.desc()).limit(10).all()
     
     # Estatísticas por tipo
     usuarios_por_tipo = {
@@ -206,7 +208,7 @@ def admin_dashboard():
 @app.route('/empresa/dashboard')
 def empresa_dashboard():
     if 'user_type' not in session or session['user_type'] != 'empresa':
-        flash('Acesso não autorizado.')
+        flash('Acesso não autorizado.', 'warning')
         return redirect(url_for('login'))
     
     return render_template('empresa_dashboard.html', user_name=session.get('user_name'))
@@ -214,7 +216,7 @@ def empresa_dashboard():
 @app.route('/aluno/dashboard')
 def aluno_dashboard():
     if 'user_type' not in session or session['user_type'] != 'aluno':
-        flash('Acesso não autorizado.')
+        flash('Acesso não autorizado.', 'warning')
         return redirect(url_for('login'))
     
     # Buscar dados do aluno atual
@@ -240,20 +242,20 @@ def logout():
     user_name = session.get('user_name')
     session.clear()
     if user_name:
-        flash(f'Até logo, {user_name}! Você foi desconectado com sucesso.')
+        flash(f'Até logo, {user_name}! Você foi desconectado com sucesso.', 'info')
     else:
-        flash('Você foi desconectado com sucesso.')
+        flash('Você foi desconectado com sucesso.', 'info')
     return redirect(url_for('home'))
 
 # Rota para gerenciar usuários (admin)
 @app.route('/admin/usuarios')
 def admin_usuarios():
     if 'user_type' not in session or session['user_type'] != 'admin':
-        flash('Acesso não autorizado.')
+        flash('Acesso não autorizado.', 'warning')
         return redirect(url_for('login'))
     
     # Buscar todos os usuários
-    usuarios = Usuario.query.order_by(Usuario.id.desc()).all()
+    usuarios = Usuario.query.order_by(Usuario.data_criacao.desc()).all()
     
     return render_template('admin_usuarios.html',
                          usuarios=usuarios,
@@ -263,21 +265,21 @@ def admin_usuarios():
 @app.route('/admin/usuario/excluir/<int:id>')
 def excluir_usuario(id):
     if 'user_type' not in session or session['user_type'] != 'admin':
-        flash('Acesso não autorizado.')
+        flash('Acesso não autorizado.', 'warning')
         return redirect(url_for('login'))
     
     # Evitar que o admin exclua a si mesmo
     if id == session['user_id']:
-        flash('Você não pode excluir sua própria conta.')
+        flash('Você não pode excluir sua própria conta.', 'warning')
         return redirect(url_for('admin_usuarios'))
     
     usuario = Usuario.query.get(id)
     if usuario:
         db.session.delete(usuario)
         db.session.commit()
-        flash(f'Usuário {usuario.nome} excluído com sucesso.')
+        flash(f'Usuário {usuario.nome} excluído com sucesso.', 'success')
     else:
-        flash('Usuário não encontrado.')
+        flash('Usuário não encontrado.', 'error')
     
     return redirect(url_for('admin_usuarios'))
 
@@ -285,7 +287,7 @@ def excluir_usuario(id):
 @app.route('/perfil')
 def perfil():
     if 'user_id' not in session:
-        flash('Faça login para acessar seu perfil.')
+        flash('Faça login para acessar seu perfil.', 'warning')
         return redirect(url_for('login'))
     
     usuario = Usuario.query.get(session['user_id'])
@@ -298,7 +300,7 @@ def perfil():
 @app.route('/perfil/atualizar', methods=['POST'])
 def atualizar_perfil():
     if 'user_id' not in session:
-        flash('Faça login para atualizar seu perfil.')
+        flash('Faça login para atualizar seu perfil.', 'warning')
         return redirect(url_for('login'))
     
     usuario = Usuario.query.get(session['user_id'])
@@ -317,7 +319,7 @@ def atualizar_perfil():
             usuario.endereco = request.form.get('endereco', usuario.endereco)
         
         db.session.commit()
-        flash('Perfil atualizado com sucesso!')
+        flash('Perfil atualizado com sucesso!', 'success')
     
     return redirect(url_for('perfil'))
 
@@ -325,7 +327,7 @@ def atualizar_perfil():
 @app.route('/perfil/alterar-senha', methods=['POST'])
 def alterar_senha():
     if 'user_id' not in session:
-        flash('Faça login para alterar sua senha.')
+        flash('Faça login para alterar sua senha.', 'warning')
         return redirect(url_for('login'))
     
     usuario = Usuario.query.get(session['user_id'])
@@ -337,85 +339,180 @@ def alterar_senha():
         
         # Verificar senha atual
         if not check_password_hash(usuario.senha, senha_atual):
-            flash('Senha atual incorreta.')
+            flash('Senha atual incorreta.', 'error')
             return redirect(url_for('perfil'))
         
         # Verificar se as novas senhas coincidem
         if nova_senha != confirmar_senha:
-            flash('As novas senhas não coincidem.')
+            flash('As novas senhas não coincidem.', 'error')
             return redirect(url_for('perfil'))
         
         # Atualizar senha
         usuario.senha = generate_password_hash(nova_senha)
         db.session.commit()
-        flash('Senha alterada com sucesso!')
+        flash('Senha alterada com sucesso!', 'success')
     
     return redirect(url_for('perfil'))
 
-# Cria as tabelas do banco de dados se não existirem
+# Rota para dashboard principal
+@app.route('/dashboard')
+def dashboard():
+    if 'user_id' not in session:
+        flash('Faça login para acessar o dashboard.', 'warning')
+        return redirect(url_for('login'))
+    
+    # Redireciona conforme tipo de usuário
+    if session['user_type'] == 'admin':
+        return redirect(url_for('admin_dashboard'))
+    elif session['user_type'] == 'empresa':
+        return redirect(url_for('empresa_dashboard'))
+    else:  # aluno
+        return redirect(url_for('aluno_dashboard'))
+
+# Rota para ver currículo (apenas para alunos)
+@app.route('/curriculo')
+def ver_curriculo():
+    if 'user_id' not in session or session['user_type'] != 'aluno':
+        flash('Acesso não autorizado.', 'warning')
+        return redirect(url_for('login'))
+    
+    usuario = Usuario.query.get(session['user_id'])
+    
+    if usuario.curriculo and os.path.exists(os.path.join(app.config['UPLOAD_FOLDER'], usuario.curriculo)):
+        # Aqui você poderia retornar o arquivo para download
+        flash('Currículo disponível para download.', 'info')
+        return redirect(url_for('aluno_dashboard'))
+    else:
+        flash('Nenhum currículo enviado.', 'info')
+        return redirect(url_for('aluno_dashboard'))
+
+# Rota para upload de currículo
+@app.route('/curriculo/upload', methods=['POST'])
+def upload_curriculo():
+    if 'user_id' not in session or session['user_type'] != 'aluno':
+        flash('Acesso não autorizado.', 'warning')
+        return redirect(url_for('login'))
+    
+    usuario = Usuario.query.get(session['user_id'])
+    
+    arquivo_cv = request.files.get('curriculo')
+    if arquivo_cv and allowed_file(arquivo_cv.filename):
+        filename = secure_filename(arquivo_cv.filename)
+        arquivo_cv.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        usuario.curriculo = filename
+        db.session.commit()
+        flash('Currículo enviado com sucesso!', 'success')
+    else:
+        flash('Formato de arquivo inválido. Use PDF, DOC ou DOCX.', 'error')
+    
+    return redirect(url_for('aluno_dashboard'))
+
+# Inicialização do banco de dados
 with app.app_context():
-    # Primeiro, apaga o banco de dados existente para recriar com novas colunas
-    db.drop_all()  # CUIDADO: Isso apaga todos os dados existentes!
-    db.create_all()
-    
-    # Cria usuário admin padrão
-    admin = Usuario(
-        tipo='admin',
-        nome='Administrador',
-        email='admin@portal.com',
-        senha=generate_password_hash('admin123'),
-        telefone='(00) 00000-0000'
-    )
-    db.session.add(admin)
-    db.session.commit()
-    print("Usuário admin criado: admin@portal.com / admin123")
-    
-    # Cria alguns usuários de exemplo
-    usuarios_exemplo = [
-        Usuario(
-            tipo='aluno',
-            nome='João Silva',
-            email='joao.silva@email.com',
-            senha=generate_password_hash('aluno123'),
-            telefone='(11) 99999-9999',
-            cpf='123.456.789-00',
-            curriculo=''
-        ),
-        Usuario(
-            tipo='aluno',
-            nome='Maria Santos',
-            email='maria.santos@email.com',
-            senha=generate_password_hash('aluno123'),
-            telefone='(11) 98888-8888',
-            cpf='987.654.321-00',
-            curriculo=''
-        ),
-        Usuario(
-            tipo='empresa',
-            nome='Tech Solutions',
-            email='contato@techsolutions.com',
-            senha=generate_password_hash('empresa123'),
-            telefone='(11) 97777-7777',
-            cnpj='12.345.678/0001-90',
-            endereco='Rua das Flores, 123, São Paulo - SP'
-        ),
-    ]
-    
-    db.session.add_all(usuarios_exemplo)
-    db.session.commit()
-    print("Usuários de exemplo criados com sucesso!")
+    try:
+        # Tentar criar as tabelas
+        db.create_all()
+        
+        # Verificar se as colunas de timestamp existem, se não, adicionar
+        try:
+            # Tenta fazer uma consulta que use as colunas
+            test = Usuario.query.first()
+        except Exception as e:
+            print(f"Erro ao acessar colunas de timestamp: {e}")
+            print("Tentando adicionar colunas...")
+            
+            # Adiciona as colunas se não existirem
+            with db.engine.connect() as conn:
+                try:
+                    conn.execute(text("ALTER TABLE usuario ADD COLUMN data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP"))
+                    print("Coluna data_criacao adicionada.")
+                except:
+                    print("Coluna data_criacao já existe.")
+                
+                try:
+                    conn.execute(text("ALTER TABLE usuario ADD COLUMN data_atualizacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP"))
+                    print("Coluna data_atualizacao adicionada.")
+                except:
+                    print("Coluna data_atualizacao já existe.")
+                
+                conn.commit()
+        
+        # Cria usuário admin padrão se não existir
+        admin_existente = Usuario.query.filter_by(email='admin@portal.com').first()
+        if not admin_existente:
+            admin = Usuario(
+                tipo='admin',
+                nome='Administrador',
+                email='admin@portal.com',
+                senha=generate_password_hash('admin123'),
+                telefone='(00) 00000-0000'
+            )
+            db.session.add(admin)
+            db.session.commit()
+            print("Usuário admin criado: admin@portal.com / admin123")
+        
+        # Verifica se existem usuários de exemplo, se não, cria
+        total_usuarios = Usuario.query.count()
+        if total_usuarios <= 1:  # Se só tem o admin ou nenhum
+            usuarios_exemplo = [
+                Usuario(
+                    tipo='aluno',
+                    nome='João Silva',
+                    email='joao.silva@email.com',
+                    senha=generate_password_hash('aluno123'),
+                    telefone='(11) 99999-9999',
+                    cpf='123.456.789-00',
+                    curriculo=''
+                ),
+                Usuario(
+                    tipo='aluno',
+                    nome='Maria Santos',
+                    email='maria.santos@email.com',
+                    senha=generate_password_hash('aluno123'),
+                    telefone='(11) 98888-8888',
+                    cpf='987.654.321-00',
+                    curriculo=''
+                ),
+                Usuario(
+                    tipo='empresa',
+                    nome='Tech Solutions',
+                    email='contato@techsolutions.com',
+                    senha=generate_password_hash('empresa123'),
+                    telefone='(11) 97777-7777',
+                    cnpj='12.345.678/0001-90',
+                    endereco='Rua das Flores, 123, São Paulo - SP'
+                ),
+            ]
+            
+            for usuario in usuarios_exemplo:
+                existente = Usuario.query.filter_by(email=usuario.email).first()
+                if not existente:
+                    db.session.add(usuario)
+            
+            db.session.commit()
+            print("Usuários de exemplo criados com sucesso!")
+        
+        print("Banco de dados inicializado com sucesso!")
+        
+    except Exception as e:
+        print(f"Erro ao inicializar banco de dados: {e}")
+        print("Tentando recriar o banco...")
+        
+        # Em caso de erro, recria o banco
+        db.drop_all()
+        db.create_all()
+        
+        # Cria usuário admin
+        admin = Usuario(
+            tipo='admin',
+            nome='Administrador',
+            email='admin@portal.com',
+            senha=generate_password_hash('admin123'),
+            telefone='(00) 00000-0000'
+        )
+        db.session.add(admin)
+        db.session.commit()
+        print("Banco de dados recriado e admin criado.")
 
 if __name__ == '__main__':
     app.run(debug=True)
-with app.app_context():
-    try:
-        # Tenta adicionar as colunas sem apagar o banco
-        from sqlalchemy import text
-        with db.engine.connect() as conn:
-            conn.execute(text("ALTER TABLE usuario ADD COLUMN data_criacao TIMESTAMP"))
-            conn.execute(text("ALTER TABLE usuario ADD COLUMN data_atualizacao TIMESTAMP"))
-            conn.commit()
-        print("Colunas adicionadas com sucesso!")
-    except Exception as e:
-        print(f"Erro ao adicionar colunas: {e}")
-        print("As colunas podem já existir.")

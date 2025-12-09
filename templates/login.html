@@ -272,25 +272,43 @@
         }
         
         .alert {
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: slideIn 0.3s ease-out;
-        }
-        
-        .alert.error {
-            background-color: rgba(239, 68, 68, 0.1);
-            color: var(--danger-color);
-            border-left: 4px solid var(--danger-color);
-        }
-        
-        .alert i {
-            font-size: 18px;
-        }
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn 0.3s ease-out;
+}
+
+.alert.error {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-left: 4px solid #ef4444;
+}
+
+.alert.success {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border-left: 4px solid #10b981;
+}
+
+.alert.info {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border-left: 4px solid #3b82f6;
+}
+
+.alert.warning {
+    background-color: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+    border-left: 4px solid #f59e0b;
+}
+
+.alert i {
+    font-size: 18px;
+}
         
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -377,16 +395,18 @@
         </div>
         
         <!-- Alertas de mensagens -->
-        <div id="alertContainer">
-            {% with messages = get_flashed_messages() %}
-                {% if messages %}
-                    <div class="alert error">
-                        <i class="fas fa-exclamation-circle"></i>
-                        <span>{{ messages[0] }}</span>
-                    </div>
-                {% endif %}
-            {% endwith %}
-        </div>
+       <div id="alertContainer">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert {{ category }}">
+                    <i class="fas {% if category == 'success' %}fa-check-circle{% elif category == 'error' %}fa-exclamation-circle{% elif category == 'info' %}fa-info-circle{% elif category == 'warning' %}fa-exclamation-triangle{% endif %}"></i>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+</div>
         
         <!-- Opções de login -->
         <div class="login-options">
