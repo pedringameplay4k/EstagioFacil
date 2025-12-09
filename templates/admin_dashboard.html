@@ -35,6 +35,48 @@
         .badge { padding: 5px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
         .badge-aluno { background: #eff6ff; color: #2563eb; }
         .badge-empresa { background: #f0fdf4; color: #16a34a; }
+
+
+
+        /* Estilo do Fundo Escuro/Transparente */
+    .loader-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8); /* Fundo branco meio transparente */
+        backdrop-filter: blur(5px); /* Efeito de desfoque moderno */
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s;
+    }
+
+    /* Classe para ativar o loader */
+    .loader-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* A Rodinha Girando (Spinner) */
+    .loader-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #e2e8f0; /* Cor cinza claro */
+        border-top: 5px solid #2563eb; /* Cor Azul do seu site */
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
     </style>
 </head>
 <body>
@@ -86,5 +128,48 @@
             </table>
         </div>
     </div>
+<div id="page-loader" class="loader-overlay">
+    <div class="loader-spinner"></div>
+</div>    
+
+
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const loader = document.getElementById('page-loader');
+
+        // Função para mostrar o loader
+        function showLoader() {
+            loader.classList.add('active');
+        }
+
+        // 1. Ativa ao clicar em links (a menos que abra em nova aba)
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                // Se o link tem href, não é âncora (#) e não abre nova aba
+                if (this.href && !this.href.startsWith('#') && 
+                    !this.href.includes('javascript') && 
+                    this.target !== '_blank') {
+                    showLoader();
+                }
+            });
+        });
+
+        // 2. Ativa ao enviar formulários (Login, Cadastro, Salvar Perfil)
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function() {
+                showLoader();
+            });
+        });
+
+        // 3. Segurança: Se a pessoa voltar a página pelo navegador, esconde o loader
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                loader.classList.remove('active');
+            }
+        });
+    });
+</script>
 </body>
 </html>

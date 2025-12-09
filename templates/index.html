@@ -592,6 +592,48 @@
                 align-items: flex-start;
             }
         }
+
+
+        /* Estilo do Fundo Escuro/Transparente */
+    .loader-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8); /* Fundo branco meio transparente */
+        backdrop-filter: blur(5px); /* Efeito de desfoque moderno */
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s;
+    }
+
+    /* Classe para ativar o loader */
+    .loader-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* A Rodinha Girando (Spinner) */
+    .loader-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #e2e8f0; /* Cor cinza claro */
+        border-top: 5px solid #2563eb; /* Cor Azul do seu site */
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+
     </style>
 </head>
 <body>
@@ -606,9 +648,8 @@
             
             <nav class="main-nav">
                 <ul>
-                    <li><a href="/" class="active">Vagas</a></li>
-                    <li><a href="/empresas">Empresas</a></li>
-                    <li><a href="/blog">Blog</a></li>
+                    
+                    
                     {% if session.user_type == 'admin' %}
                         <li><a href="/admin/dashboard" style="color: #f59e0b;"><i class="fas fa-crown"></i> Painel Admin</a></li>
                     {% endif %}
@@ -617,9 +658,18 @@
             
             <div class="user-actions">
                 {% if session.user_id %}
-                    <div class="logged-user">
-                        <span style="color: white; margin-right: 15px;">Olá, <strong>{{ session.user_name }}</strong></span>
-                        <a href="/logout" class="btn btn-outline">Sair</a>
+                    <div class="logged-user" style="display: flex; align-items: center; gap: 15px;">
+                        <span style="color: white; font-size: 15px;">
+                            Olá, <strong>{{ session.user_name.split()[0] }}</strong>
+                        </span>
+                        
+                        <a href="/perfil" class="btn" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 15px;">
+                            <i class="fas fa-user-circle"></i> Meu Perfil
+                        </a>
+
+                        <a href="/logout" class="btn" style="background: transparent; color: #fca5a5; border: 1px solid #fca5a5; padding: 8px 15px;" title="Sair do sistema">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </a>
                     </div>
                 {% else %}
                     <a href="/login" class="btn btn-outline">Entrar</a>
@@ -754,15 +804,15 @@
                 <div class="footer-column">
                     <h3>Contato</h3>
                     <ul>
-                        <li><i class="fas fa-map-marker-alt"></i> São Paulo, SP</li>
-                        <li><i class="fas fa-phone"></i> (11) 9999-9999</li>
+                        <li><i class="fas fa-map-marker-alt"></i> Brasília, DF</li>
+                        <li><i class="fas fa-phone"></i> (61) 9 9397-7406</li>
                         <li><i class="fas fa-envelope"></i> contato@portalestagios.com</li>
                     </ul>
                 </div>
             </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2023 PortalEstágios. Todos os direitos reservados.</p>
+                <p>&copy; 2023 EstágioFácil. Todos os direitos reservados.</p>
                 <p><a href="/privacidade" style="color: #cbd5e1; margin: 0 10px;">Política de Privacidade</a> | 
                    <a href="/termos" style="color: #cbd5e1; margin: 0 10px;">Termos de Uso</a></p>
             </div>
@@ -1178,5 +1228,54 @@
             });
         });
     </script>
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const loader = document.getElementById('page-loader');
+
+        // 1. EFEITO DE ENTRADA: Esconde o loader assim que a página carregar
+        // Usamos um pequeno timeout para garantir que a animação seja vista
+        setTimeout(() => {
+            loader.classList.remove('active');
+        }, 500); // 0.5 segundos de delay para ficar suave
+
+        // Função para mostrar o loader (na saída)
+        function showLoader() {
+            loader.classList.add('active');
+        }
+
+        // 2. EFEITO DE SAÍDA: Ativa ao clicar em links
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                // Só ativa se for link interno e não for abrir em nova aba
+                if (this.href && !this.href.startsWith('#') && 
+                    !this.href.includes('javascript') && 
+                    this.target !== '_blank') {
+                    showLoader();
+                }
+            });
+        });
+
+        // 3. Ativa ao enviar formulários
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function() {
+                showLoader();
+            });
+        });
+
+        // 4. Segurança: Se o usuário voltar a página pelo navegador, esconde o loader
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                loader.classList.remove('active');
+            }
+        });
+    });
+</script>
+
+
+  <div id="page-loader" class="loader-overlay active"> <div class="loader-spinner"></div>
+</div>
+</div>
 </body>
 </html>

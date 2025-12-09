@@ -28,6 +28,8 @@ class Usuario(db.Model):
     email = db.Column(db.String(100), nullable=False)
     senha = db.Column(db.String(100), nullable=False)
     telefone = db.Column(db.String(20))
+    foto_perfil = db.Column(db.String(120), nullable=True)
+    sobre_mim = db.Column(db.Text, nullable=True) # Text permite textos longos
     
     # Dados específicos de Aluno
     cpf = db.Column(db.String(14), unique=True, nullable=True)
@@ -287,23 +289,34 @@ def atualizar_perfil():
     usuario = Usuario.query.get(session['user_id'])
     
     if usuario:
+        # Atualiza dados básicos
         usuario.nome = request.form.get('nome', usuario.nome)
         usuario.telefone = request.form.get('telefone', usuario.telefone)
+        usuario.sobre_mim = request.form.get('sobre_mim', usuario.sobre_mim) # Novo campo
         
-        # Se for aluno, atualizar CPF
+        # Atualiza dados específicos
         if usuario.tipo == 'aluno':
             usuario.cpf = request.form.get('cpf', usuario.cpf)
-        
-        # Se for empresa, atualizar CNPJ e endereço
-        if usuario.tipo == 'empresa':
+        elif usuario.tipo == 'empresa':
             usuario.cnpj = request.form.get('cnpj', usuario.cnpj)
             usuario.endereco = request.form.get('endereco', usuario.endereco)
-        
+            
+        # Lógica da FOTO DE PERFIL
+        arquivo_foto = request.files.get('foto_perfil')
+        if arquivo_foto and arquivo_foto.filename != '':
+            # Aceita apenas imagens
+            if '.' in arquivo_foto.filename and arquivo_foto.filename.rsplit('.', 1)[1].lower() in {'png', 'jpg', 'jpeg'}:
+                filename = secure_filename(f"user_{usuario.id}_{arquivo_foto.filename}")
+                arquivo_foto.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                usuario.foto_perfil = filename
+            else:
+                flash('Formato de imagem inválido. Use PNG ou JPG.', 'error')
+                return redirect(url_for('perfil'))
+
         db.session.commit()
         flash('Perfil atualizado com sucesso!', 'success')
     
     return redirect(url_for('perfil'))
-
 # Rota para alterar senha
 @app.route('/perfil/alterar-senha', methods=['POST'])
 def alterar_senha():
@@ -494,6 +507,10 @@ with app.app_context():
         db.session.add(admin)
         db.session.commit()
         print("Banco de dados recriado e admin criado.")
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 if __name__ == '__main__':
     app.run(debug=True)

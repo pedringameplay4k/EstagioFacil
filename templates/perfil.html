@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu Perfil - EstágioFácil</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #2563eb; --bg: #f8fafc; --text: #1e293b; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        
+        body { background: var(--bg); color: var(--text); padding-bottom: 40px; }
+        
+        .navbar { background: white; padding: 15px 0; box-shadow: 0 2px 10px rgba(0,0,0,0.05); margin-bottom: 40px; }
+        .nav-content { max-width: 1000px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; }
+        .logo { font-weight: bold; color: var(--primary); font-size: 20px; display: flex; align-items: center; gap: 8px; text-decoration: none; }
+        .back-btn { text-decoration: none; color: #64748b; font-size: 14px; display: flex; align-items: center; gap: 5px; }
+        
+        .container { max-width: 1000px; margin: 0 auto; padding: 0 20px; display: grid; grid-template-columns: 300px 1fr; gap: 30px; }
+        
+        /* Card Esquerdo (Resumo) */
+        .profile-card { background: white; padding: 30px; border-radius: 16px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02); height: fit-content; }
+        
+        .avatar-container { position: relative; width: 120px; height: 120px; margin: 0 auto 20px; }
+        .avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 4px solid #eff6ff; }
+        .avatar-placeholder { width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, #2563eb, #8b5cf6); color: white; display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; border: 4px solid #eff6ff; }
+        
+        .user-name { font-size: 20px; font-weight: 700; margin-bottom: 5px; }
+        .user-type { display: inline-block; background: #eff6ff; color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 20px; }
+        
+        .stats { display: flex; justify-content: center; gap: 15px; border-top: 1px solid #f1f5f9; padding-top: 20px; }
+        .stat-item { text-align: center; }
+        .stat-val { font-weight: 700; font-size: 18px; }
+        .stat-lbl { font-size: 12px; color: #64748b; }
+
+        /* Card Direito (Formulário) */
+        .edit-card { background: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+        h2 { margin-bottom: 25px; font-size: 22px; border-bottom: 1px solid #f1f5f9; padding-bottom: 15px; }
+        
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .full-width { grid-column: span 2; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: #475569; }
+        input, textarea, select { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; transition: 0.3s; }
+        input:focus, textarea:focus { border-color: var(--primary); outline: none; }
+        textarea { resize: vertical; min-height: 100px; }
+        
+        .file-upload { position: relative; overflow: hidden; display: inline-block; width: 100%; }
+        .file-upload input[type=file] { position: absolute; left: 0; top: 0; opacity: 0; cursor: pointer; height: 100%; }
+        .file-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background: #f8fafc; border: 2px dashed #cbd5e1; padding: 15px; border-radius: 8px; color: #64748b; cursor: pointer; transition: 0.3s; }
+        .file-btn:hover { border-color: var(--primary); color: var(--primary); background: #eff6ff; }
+        
+        .btn-save { background: var(--primary); color: white; border: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; width: 100%; margin-top: 10px; }
+        .btn-save:hover { background: #1d4ed8; transform: translateY(-2px); }
+
+        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; }
+        .alert-success { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+        .alert-error { background: #fee2e2; color: #ef4444; border: 1px solid #fecaca; }
+
+        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } .form-grid { grid-template-columns: 1fr; } .full-width { grid-column: span 1; } }
+    
+
+
+        /* Estilo do Fundo Escuro/Transparente */
+    .loader-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(255, 255, 255, 0.8); /* Fundo branco meio transparente */
+        backdrop-filter: blur(5px); /* Efeito de desfoque moderno */
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.3s ease, visibility 0.3s;
+    }
+
+    /* Classe para ativar o loader */
+    .loader-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* A Rodinha Girando (Spinner) */
+    .loader-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid #e2e8f0; /* Cor cinza claro */
+        border-top: 5px solid #2563eb; /* Cor Azul do seu site */
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="/" class="logo"><i class="fas fa-graduation-cap"></i> EstágioFácil</a>
+            <a href="/" class="back-btn"><i class="fas fa-arrow-left"></i> Voltar ao Dashboard</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <aside class="profile-card">
+            <div class="avatar-container">
+                {% if usuario.foto_perfil %}
+                    <img src="{{ url_for('static', filename='uploads/' + usuario.foto_perfil) }}" 
+                         onerror="this.src='/static/img/default-avatar.png'; this.onerror=null; this.parentNode.innerHTML='<div class=\'avatar-placeholder\'>{{ usuario.nome[0]|upper }}</div>'" 
+                         class="avatar" alt="Foto de Perfil">
+                {% else %}
+                    <div class="avatar-placeholder">{{ usuario.nome[0]|upper }}</div>
+                {% endif %}
+            </div>
+            
+            <h1 class="user-name">{{ usuario.nome }}</h1>
+            <span class="user-type">{{ usuario.tipo|capitalize }}</span>
+            
+            <p style="font-size: 14px; color: #64748b; margin-top: 10px;">
+                {{ usuario.email }}
+            </p>
+
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-val">0</div>
+                    <div class="stat-lbl">Candidaturas</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-val">0</div>
+                    <div class="stat-lbl">Vagas Salvas</div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="edit-card">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <h2><i class="fas fa-user-edit"></i> Editar Perfil</h2>
+            
+            <form action="/perfil/atualizar" method="POST" enctype="multipart/form-data">
+                <div class="form-grid">
+                    <div class="full-width">
+                        <label>Foto de Perfil</label>
+                        <div class="file-upload">
+                            <input type="file" name="foto_perfil" accept="image/*" onchange="updateFileName(this)">
+                            <div class="file-btn">
+                                <i class="fas fa-camera"></i>
+                                <span id="fileName">Clique para alterar sua foto</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Nome Completo</label>
+                        <input type="text" name="nome" value="{{ usuario.nome }}" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Email (Não alterável)</label>
+                        <input type="email" value="{{ usuario.email }}" disabled style="background: #f1f5f9; cursor: not-allowed;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Telefone / WhatsApp</label>
+                        <input type="text" name="telefone" value="{{ usuario.telefone }}" placeholder="(00) 00000-0000">
+                    </div>
+
+                    {% if usuario.tipo == 'aluno' %}
+                        <div class="form-group">
+                            <label>CPF</label>
+                            <input type="text" name="cpf" value="{{ usuario.cpf }}" placeholder="000.000.000-00">
+                        </div>
+                    {% elif usuario.tipo == 'empresa' %}
+                        <div class="form-group">
+                            <label>CNPJ</label>
+                            <input type="text" name="cnpj" value="{{ usuario.cnpj }}">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Endereço Completo</label>
+                            <input type="text" name="endereco" value="{{ usuario.endereco }}">
+                        </div>
+                    {% endif %}
+
+                    <div class="form-group full-width">
+                        <label>Sobre Mim / Bio</label>
+                        <textarea name="sobre_mim" placeholder="Conte um pouco sobre suas experiências e objetivos...">{{ usuario.sobre_mim if usuario.sobre_mim else '' }}</textarea>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-save">Salvar Alterações</button>
+            </form>
+            
+            <div style="margin-top: 20px; text-align: center; border-top: 1px solid #f1f5f9; padding-top: 20px;">
+                <p style="font-size: 14px; color: #64748b;">Quer mudar sua senha? <a href="#" style="color: var(--primary); font-weight: 600;">Clique aqui</a></p>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function updateFileName(input) {
+            const fileNameSpan = document.getElementById('fileName');
+            if (input.files && input.files.length > 0) {
+                fileNameSpan.textContent = input.files[0].name;
+                fileNameSpan.style.color = '#2563eb';
+            } else {
+                fileNameSpan.textContent = 'Clique para alterar sua foto';
+                fileNameSpan.style.color = '#64748b';
+            }
+        }
+    </script>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const loader = document.getElementById('page-loader');
+
+        // 1. EFEITO DE ENTRADA: Esconde o loader assim que a página carregar
+        // Usamos um pequeno timeout para garantir que a animação seja vista
+        setTimeout(() => {
+            loader.classList.remove('active');
+        }, 500); // 0.5 segundos de delay para ficar suave
+
+        // Função para mostrar o loader (na saída)
+        function showLoader() {
+            loader.classList.add('active');
+        }
+
+        // 2. EFEITO DE SAÍDA: Ativa ao clicar em links
+        document.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                // Só ativa se for link interno e não for abrir em nova aba
+                if (this.href && !this.href.startsWith('#') && 
+                    !this.href.includes('javascript') && 
+                    this.target !== '_blank') {
+                    showLoader();
+                }
+            });
+        });
+
+        // 3. Ativa ao enviar formulários
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function() {
+                showLoader();
+            });
+        });
+
+        // 4. Segurança: Se o usuário voltar a página pelo navegador, esconde o loader
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                loader.classList.remove('active');
+            }
+        });
+    });
+</script>
+    <div id="page-loader" class="loader-overlay active"> <div class="loader-spinner"></div>
+</div>
+</div>
+</body>
+</html>
