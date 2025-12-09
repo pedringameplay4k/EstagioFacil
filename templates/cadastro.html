@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Portal de Estágios</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #10b981;
+            --accent-color: #8b5cf6;
+            --light-bg: #f8fafc;
+            --dark-text: #1e293b;
+            --light-text: #64748b;
+            --border-color: #e2e8f0;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: var(--dark-text);
+        }
+        
+        .container {
+            display: flex;
+            max-width: 1000px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .left-panel {
+            flex: 1;
+            background: linear-gradient(to bottom right, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo i {
+            font-size: 28px;
+        }
+        
+        .panel-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+        
+        .panel-text {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+        
+        .benefits {
+            list-style: none;
+            margin-top: 20px;
+        }
+        
+        .benefits li {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .benefits i {
+            color: var(--secondary-color);
+            font-size: 18px;
+        }
+        
+        .right-panel {
+            flex: 1.2;
+            padding: 40px;
+        }
+        
+        .form-header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .form-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark-text);
+            margin-bottom: 10px;
+        }
+        
+        .form-subtitle {
+            color: var(--light-text);
+            font-size: 15px;
+        }
+        
+        .tabs {
+            display: flex;
+            background: var(--light-bg);
+            border-radius: 12px;
+            padding: 6px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .tab.active {
+            background: white;
+            color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+        }
+        
+        .tab i {
+            font-size: 18px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark-text);
+            font-size: 14px;
+        }
+        
+        .input-with-icon {
+            position: relative;
+        }
+        
+        .input-with-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--light-text);
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 14px 15px 14px 45px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+            color: var(--dark-text);
+        }
+        
+        .input-without-icon {
+            padding: 14px 15px !important;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .file-upload {
+            position: relative;
+            border: 2px dashed var(--border-color);
+            border-radius: 10px;
+            padding: 25px 15px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .file-upload:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(37, 99, 235, 0.03);
+        }
+        
+        .file-upload i {
+            font-size: 32px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .file-upload p {
+            font-size: 14px;
+            color: var(--light-text);
+            margin-bottom: 5px;
+        }
+        
+        .file-upload span {
+            font-size: 12px;
+            color: var(--light-text);
+        }
+        
+        #file-name {
+            margin-top: 10px;
+            font-size: 13px;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .progress-container {
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: var(--light-bg);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        
+        .progress {
+            height: 100%;
+            background: var(--secondary-color);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .password-strength {
+            margin-top: 10px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .strength-bar {
+            height: 4px;
+            flex: 1;
+            background: var(--border-color);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .strength-level {
+            height: 100%;
+            width: 0%;
+            transition: all 0.3s;
+        }
+        
+        .form-footer {
+            margin-top: 30px;
+        }
+        
+        .terms {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .terms a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .terms a:hover {
+            text-decoration: underline;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        .login-link {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+            color: var(--light-text);
+        }
+        
+        .login-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .alert.error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+            border-left: 4px solid var(--danger-color);
+        }
+        
+        .alert.success {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success-color);
+            border-left: 4px solid var(--success-color);
+        }
+        
+        .alert i {
+            font-size: 18px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                max-width: 500px;
+            }
+            
+            .left-panel {
+                padding: 30px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 20px;
+            }
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Painel esquerdo com informações -->
+    <div class="left-panel">
+        <div class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            <span>PortalEstágios</span>
+        </div>
+        
+        <h1 class="panel-title">Encontre a oportunidade perfeita para sua carreira</h1>
+        
+        <p class="panel-text">
+            Junte-se a milhares de estudantes e empresas que já encontraram a combinação perfeita entre talento e oportunidade.
+        </p>
+        
+        <ul class="benefits">
+            <li><i class="fas fa-check-circle"></i> Conexão direta com empresas de ponta</li>
+            <li><i class="fas fa-check-circle"></i> Processo de candidatura simplificado</li>
+            <li><i class="fas fa-check-circle"></i> Ferramentas para acompanhamento</li>
+            <li><i class="fas fa-check-circle"></i> Recomendações personalizadas</li>
+        </ul>
+    </div>
+    
+    <!-- Painel direito com formulário -->
+    <div class="right-panel">
+        <div class="form-header">
+            <h2 class="form-title">Criar Conta</h2>
+            <p class="form-subtitle">Preencha seus dados para começar</p>
+        </div>
+        
+        <!-- Alertas de mensagens -->
+        <div id="alertContainer">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{ messages[0] }}</span>
+                    </div>
+                {% endif %}
+            {% endwith %}
+        </div>
+        
+        <!-- Tabs para seleção de tipo de usuário -->
+        <div class="tabs">
+            <div class="tab active" id="tabAluno" onclick="selectTab('aluno')">
+                <i class="fas fa-user-graduate"></i>
+                <span>Aluno / Candidato</span>
+            </div>
+            <div class="tab" id="tabEmpresa" onclick="selectTab('empresa')">
+                <i class="fas fa-building"></i>
+                <span>Empresa / Recrutador</span>
+            </div>
+        </div>
+        
+        <!-- Formulário -->
+        <form action="/cadastro" method="POST" enctype="multipart/form-data" id="cadastroForm">
+            <input type="hidden" name="tipo_usuario" id="tipo_usuario" value="aluno">
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="nome">Nome Completo</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="nome" name="nome" placeholder="Digite seu nome completo" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" name="email" placeholder="seu.email@exemplo.com" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="senha">Senha</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="senha" name="senha" placeholder="Crie uma senha segura" required onkeyup="checkPasswordStrength()">
+                    </div>
+                    <div class="password-strength">
+                        <span id="strength-text">Força da senha:</span>
+                        <div class="strength-bar">
+                            <div class="strength-level" id="strength-level"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="telefone">Telefone</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-phone"></i>
+                        <input type="text" id="telefone" name="telefone" placeholder="(00) 00000-0000" required onkeyup="formatPhoneNumber(this)">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Campos do Aluno -->
+            <div id="camposAluno">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cpf">CPF</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-id-card"></i>
+                            <input type="text" id="cpf" name="cpf" placeholder="000.000.000-00" onkeyup="formatCPF(this)">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Currículo (PDF/Word)</label>
+                    <div class="file-upload" onclick="document.getElementById('curriculo').click()">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Clique para anexar seu currículo</p>
+                        <span>Formatos aceitos: PDF, DOC, DOCX (Max: 5MB)</span>
+                        <div id="file-name"></div>
+                    </div>
+                    <input type="file" id="curriculo" name="curriculo" accept=".pdf,.doc,.docx" class="hidden" onchange="showFileName(this)">
+                    
+                    <div class="progress-container" id="upload-progress">
+                        <div class="progress-bar">
+                            <div class="progress" id="progress-bar"></div>
+                        </div>
+                        <div id="progress-text">Enviando...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Campos da Empresa -->
+            <div id="camposEmpresa" class="hidden">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="cnpj">CNPJ</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-building"></i>
+                            <input type="text" id="cnpj" name="cnpj" placeholder="00.000.000/0000-00" onkeyup="formatCNPJ(this)">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="endereco">Endereço da Empresa</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <input type="text" id="endereco" name="endereco" placeholder="Digite o endereço completo">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-footer">
+                <div class="terms">
+                    <input type="checkbox" id="termos" name="termos" required>
+                    <label for="termos">Concordo com os <a href="#">Termos de Uso</a> e <a href="#">Política de Privacidade</a></label>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submitBtn">
+                    <i class="fas fa-user-plus"></i>
+                    <span id="btnText">Criar Conta</span>
+                    <div class="loading hidden" id="loadingSpinner"></div>
+                </button>
+            </div>
+        </form>
+        
+        <div class="login-link">
+            Já possui uma conta? <a href="/login">Faça login aqui</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Seleção de tabs
+    function selectTab(tipo) {
+        // Atualizar tabs visuais
+        const tabAluno = document.getElementById('tabAluno');
+        const tabEmpresa = document.getElementById('tabEmpresa');
+        const camposAluno = document.getElementById('camposAluno');
+        const camposEmpresa = document.getElementById('camposEmpresa');
+        const tipoInput = document.getElementById('tipo_usuario');
+        
+        if (tipo === 'aluno') {
+            tabAluno.classList.add('active');
+            tabEmpresa.classList.remove('active');
+            camposAluno.classList.remove('hidden');
+            camposEmpresa.classList.add('hidden');
+            tipoInput.value = 'aluno';
+        } else {
+            tabAluno.classList.remove('active');
+            tabEmpresa.classList.add('active');
+            camposAluno.classList.add('hidden');
+            camposEmpresa.classList.remove('hidden');
+            tipoInput.value = 'empresa';
+        }
+    }
+    
+    // Formatação de CPF
+    function formatCPF(input) {
+        let value = input.value.replace(/\D/g, '');
+        
+        if (value.length > 11) {
+            value = value.substring(0, 11);
+        }
+        
+        if (value.length <= 11) {
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+        }
+        
+        input.value = value;
+    }
+    
+    // Formatação de CNPJ
+    function formatCNPJ(input) {
+        let value = input.value.replace(/\D/g, '');
+        
+        if (value.length > 14) {
+            value = value.substring(0, 14);
+        }
+        
+        if (value.length <= 14) {
+            value = value.replace(/(\d{2})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1.$2');
+            value = value.replace(/(\d{3})(\d)/, '$1/$2');
+            value = value.replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+        }
+        
+        input.value = value;
+    }
+    
+    // Formatação de telefone
+    function formatPhoneNumber(input) {
+        let value = input.value.replace(/\D/g, '');
+        
+        if (value.length > 11) {
+            value = value.substring(0, 11);
+        }
+        
+        if (value.length > 10) {
+            value = value.replace(/(\d{2})(\d)/, '($1) $2');
+            value = value.replace(/(\d{5})(\d)/, '$1-$2');
+        } else if (value.length > 6) {
+            value = value.replace(/(\d{2})(\d)/, '($1) $2');
+            value = value.replace(/(\d{4})(\d)/, '$1-$2');
+        } else if (value.length > 2) {
+            value = value.replace(/(\d{2})(\d)/, '($1) $2');
+        } else if (value.length > 0) {
+            value = value.replace(/^(\d*)/, '($1');
+        }
+        
+        input.value = value;
+    }
+    
+    // Verificação de força da senha
+    function checkPasswordStrength() {
+        const password = document.getElementById('senha').value;
+        const strengthLevel = document.getElementById('strength-level');
+        const strengthText = document.getElementById('strength-text');
+        
+        let strength = 0;
+        let color = '#ef4444'; // Vermelho - fraca
+        let text = 'Fraca';
+        
+        // Verificar comprimento
+        if (password.length >= 8) strength += 20;
+        if (password.length >= 12) strength += 10;
+        
+        // Verificar letras minúsculas e maiúsculas
+        if (/[a-z]/.test(password)) strength += 10;
+        if (/[A-Z]/.test(password)) strength += 10;
+        
+        // Verificar números
+        if (/[0-9]/.test(password)) strength += 20;
+        
+        // Verificar caracteres especiais
+        if (/[^A-Za-z0-9]/.test(password)) strength += 30;
+        
+        // Determinar força
+        if (strength >= 70) {
+            color = '#10b981'; // Verde - forte
+            text = 'Forte';
+        } else if (strength >= 40) {
+            color = '#f59e0b'; // Amarelo - média
+            text = 'Média';
+        }
+        
+        strengthLevel.style.width = `${strength}%`;
+        strengthLevel.style.backgroundColor = color;
+        strengthText.textContent = `Força da senha: ${text}`;
+    }
+    
+    // Mostrar nome do arquivo selecionado
+    function showFileName(input) {
+        const fileNameDisplay = document.getElementById('file-name');
+        
+        if (input.files.length > 0) {
+            const fileName = input.files[0].name;
+            const fileSize = (input.files[0].size / 1024 / 1024).toFixed(2); // Tamanho em MB
+            
+            if (fileSize > 5) {
+                showAlert('O arquivo excede o limite de 5MB. Por favor, selecione um arquivo menor.', 'error');
+                input.value = '';
+                fileNameDisplay.textContent = '';
+                return;
+            }
+            
+            fileNameDisplay.textContent = `Arquivo selecionado: ${fileName} (${fileSize} MB)`;
+            
+            // Simular progresso de upload
+            simulateUploadProgress();
+        } else {
+            fileNameDisplay.textContent = '';
+        }
+    }
+    
+    // Simular progresso de upload
+    function simulateUploadProgress() {
+        const progressContainer = document.getElementById('upload-progress');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+        
+        progressContainer.style.display = 'block';
+        progressBar.style.width = '0%';
+        
+        let progress = 0;
+        const interval = setInterval(() => {
+            progress += Math.random() * 15;
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+                progressText.textContent = 'Upload concluído!';
+                
+                // Ocultar após 2 segundos
+                setTimeout(() => {
+                    progressContainer.style.display = 'none';
+                }, 2000);
+            }
+            
+            progressBar.style.width = `${progress}%`;
+        }, 200);
+    }
+    
+    // Mostrar alertas personalizados
+    function showAlert(message, type) {
+        const alertContainer = document.getElementById('alertContainer');
+        
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert ${type}`;
+        
+        const icon = type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle';
+        
+        alertDiv.innerHTML = `
+            <i class="fas ${icon}"></i>
+            <span>${message}</span>
+        `;
+        
+        alertContainer.appendChild(alertDiv);
+        
+        // Remover após 5 segundos
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
+    
+    // Manipular envio do formulário
+    document.getElementById('cadastroForm').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        
+        // Validar formulário
+        const tipoUsuario = document.getElementById('tipo_usuario').value;
+        const cpf = document.getElementById('cpf').value;
+        const cnpj = document.getElementById('cnpj').value;
+        
+        if (tipoUsuario === 'aluno' && cpf.replace(/\D/g, '').length !== 11) {
+            e.preventDefault();
+            showAlert('Por favor, insira um CPF válido (11 dígitos).', 'error');
+            return;
+        }
+        
+        if (tipoUsuario === 'empresa' && cnpj.replace(/\D/g, '').length !== 14) {
+            e.preventDefault();
+            showAlert('Por favor, insira um CNPJ válido (14 dígitos).', 'error');
+            return;
+        }
+        
+        // Mostrar estado de carregamento
+        btnText.textContent = 'Processando...';
+        loadingSpinner.classList.remove('hidden');
+        submitBtn.disabled = true;
+        
+        // Em um ambiente real, isso seria feito pelo backend
+        // Aqui apenas simulamos um atraso para demonstração
+        setTimeout(() => {
+            btnText.textContent = 'Conta Criada!';
+            loadingSpinner.classList.add('hidden');
+            
+            // Em um caso real, o redirecionamento seria feito pelo backend
+            // showAlert('Conta criada com sucesso! Redirecionando...', 'success');
+        }, 1500);
+    });
+    
+    // Inicializar verificação de senha
+    document.addEventListener('DOMContentLoaded', function() {
+        checkPasswordStrength();
+    });
+</script>
+
+</body>
+</html>

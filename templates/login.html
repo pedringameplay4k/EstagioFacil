@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Portal Estágios</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary-color: #10b981;
+            --accent-color: #8b5cf6;
+            --light-bg: #f8fafc;
+            --dark-text: #1e293b;
+            --light-text: #64748b;
+            --border-color: #e2e8f0;
+            --danger-color: #ef4444;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            display: flex;
+            max-width: 1000px;
+            width: 100%;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .left-panel {
+            flex: 1;
+            background: linear-gradient(to bottom right, var(--primary-color), var(--accent-color));
+            color: white;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .logo i {
+            font-size: 28px;
+        }
+        
+        .panel-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+        
+        .panel-text {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+        
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--secondary-color);
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .right-panel {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .form-header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .form-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--dark-text);
+            margin-bottom: 10px;
+        }
+        
+        .form-subtitle {
+            color: var(--light-text);
+            font-size: 15px;
+        }
+        
+        .login-options {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .login-option {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+        
+        .login-option:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .login-option.active {
+            background-color: rgba(37, 99, 235, 0.1);
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+        
+        .login-option i {
+            font-size: 18px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark-text);
+            font-size: 14px;
+        }
+        
+        .input-with-icon {
+            position: relative;
+        }
+        
+        .input-with-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--light-text);
+        }
+        
+        input {
+            width: 100%;
+            padding: 14px 15px 14px 45px;
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+            color: var(--dark-text);
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+        
+        .form-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .forgot-password {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .register-link {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+            color: var(--light-text);
+        }
+        
+        .register-link a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        .alert.error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger-color);
+            border-left: 4px solid var(--danger-color);
+        }
+        
+        .alert i {
+            font-size: 18px;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                max-width: 500px;
+            }
+            
+            .left-panel {
+                padding: 30px;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .login-options {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Painel esquerdo com informações -->
+    <div class="left-panel">
+        <div class="logo">
+            <i class="fas fa-graduation-cap"></i>
+            <span>Estágios Fácil</span>
+        </div>
+        
+        <h1 class="panel-title">Bem-vindo de volta!</h1>
+        
+        <p class="panel-text">
+            Acesse sua conta para continuar sua jornada rumo às melhores oportunidades de estágio.
+        </p>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-number">1.2k+</div>
+                <div class="stat-label">Vagas Ativas</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">850+</div>
+                <div class="stat-label">Empresas Parceiras</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">5.7k+</div>
+                <div class="stat-label">Estudantes Empregados</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Painel direito com formulário -->
+    <div class="right-panel">
+        <div class="form-header">
+            <h2 class="form-title">Login</h2>
+            <p class="form-subtitle">Entre com suas credenciais para acessar</p>
+        </div>
+        
+        <!-- Alertas de mensagens -->
+        <div id="alertContainer">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert error">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>{{ messages[0] }}</span>
+                    </div>
+                {% endif %}
+            {% endwith %}
+        </div>
+        
+        <!-- Opções de login -->
+        <div class="login-options">
+            <div class="login-option active" id="optionAluno" onclick="selectOption('aluno')">
+                <i class="fas fa-user-graduate"></i>
+                <span>Aluno</span>
+            </div>
+            <div class="login-option" id="optionEmpresa" onclick="selectOption('empresa')">
+                <i class="fas fa-building"></i>
+                <span>Empresa</span>
+            </div>
+            <div class="login-option" id="optionAdmin" onclick="selectOption('admin')">
+                <i class="fas fa-user-shield"></i>
+                <span>Administrador</span>
+            </div>
+        </div>
+        
+        <!-- Formulário de Login -->
+        <form action="/login" method="POST" id="loginForm">
+            <input type="hidden" name="tipo_usuario" id="tipo_usuario" value="aluno">
+            
+            <div class="form-group">
+                <label for="email">Email</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" name="email" placeholder="seu.email@exemplo.com" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="senha">Senha</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="senha" name="senha" placeholder="Digite sua senha" required>
+                </div>
+            </div>
+            
+            <div class="form-footer">
+                <div class="remember-me">
+                    <input type="checkbox" id="lembrar" name="lembrar">
+                    <label for="lembrar">Lembrar-me</label>
+                </div>
+                <a href="#" class="forgot-password">Esqueci minha senha</a>
+            </div>
+            
+            <button type="submit" class="submit-btn" id="submitBtn">
+                <i class="fas fa-sign-in-alt"></i>
+                <span id="btnText">Entrar</span>
+                <div class="loading hidden" id="loadingSpinner"></div>
+            </button>
+        </form>
+        
+        <div class="register-link">
+            Não tem uma conta? <a href="/cadastro">Cadastre-se aqui</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Seleção de opção de login
+    function selectOption(tipo) {
+        const options = ['optionAluno', 'optionEmpresa', 'optionAdmin'];
+        const tipoInput = document.getElementById('tipo_usuario');
+        
+        options.forEach(option => {
+            document.getElementById(option).classList.remove('active');
+        });
+        
+        document.getElementById('option' + tipo.charAt(0).toUpperCase() + tipo.slice(1)).classList.add('active');
+        tipoInput.value = tipo;
+        
+        // Alterar placeholder do email baseado no tipo
+        const emailInput = document.getElementById('email');
+        if (tipo === 'aluno') {
+            emailInput.placeholder = 'seu.email@exemplo.com';
+        } else if (tipo === 'empresa') {
+            emailInput.placeholder = 'empresa@email.com';
+        } else {
+            emailInput.placeholder = 'admin@portal.com';
+        }
+    }
+    
+    // Mostrar alertas personalizados
+    function showAlert(message, type) {
+        const alertContainer = document.getElementById('alertContainer');
+        
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert ${type}`;
+        
+        const icon = type === 'error' ? 'fa-exclamation-circle' : 'fa-check-circle';
+        
+        alertDiv.innerHTML = `
+            <i class="fas ${icon}"></i>
+            <span>${message}</span>
+        `;
+        
+        alertContainer.appendChild(alertDiv);
+        
+        // Remover após 5 segundos
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
+    
+    // Manipular envio do formulário
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const tipoUsuario = document.getElementById('tipo_usuario').value;
+        
+        // Validação básica
+        const email = document.getElementById('email').value;
+        const senha = document.getElementById('senha').value;
+        
+        if (!email || !senha) {
+            e.preventDefault();
+            showAlert('Por favor, preencha todos os campos.', 'error');
+            return;
+        }
+        
+        // Mostrar estado de carregamento
+        btnText.textContent = 'Entrando...';
+        loadingSpinner.classList.remove('hidden');
+        submitBtn.disabled = true;
+        
+        // Simular verificação de admin (em produção, isso seria feito no backend)
+        if (tipoUsuario === 'admin') {
+            const adminEmail = 'admin@portal.com'; // Email de exemplo
+            const adminPassword = 'admin123'; // Senha de exemplo
+            
+            // Simular atraso de rede
+            setTimeout(() => {
+                if (email === adminEmail && senha === adminPassword) {
+                    // Redirecionar para dashboard administrativo
+                    window.location.href = '/admin/dashboard';
+                } else {
+                    e.preventDefault();
+                    showAlert('Credenciais de administrador inválidas.', 'error');
+                    btnText.textContent = 'Entrar';
+                    loadingSpinner.classList.add('hidden');
+                    submitBtn.disabled = false;
+                }
+            }, 1500);
+        } else {
+            // Para usuários normais, o formulário segue normalmente
+            setTimeout(() => {
+                btnText.textContent = 'Redirecionando...';
+            }, 1000);
+        }
+    });
+    
+    // Recuperação de senha (simulação)
+    document.querySelector('.forgot-password').addEventListener('click', function(e) {
+        e.preventDefault();
+        const email = prompt('Digite seu email para recuperação de senha:');
+        if (email) {
+            showAlert(`Instruções de recuperação enviadas para ${email}`, 'error');
+        }
+    });
+</script>
+
+</body>
+</html>
