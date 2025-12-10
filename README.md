@@ -40,3 +40,24 @@ Make sure you have **Python** installed.
 ```bash
 git clone [https://github.com/YOUR-USERNAME/ESTAGIOFACIL.git](https://github.com/YOUR-USERNAME/ESTAGIOFACIL.git)
 cd ESTAGIOFACIL
+
+
+ESTAGIOFACIL/
+│
+├── instance/           # SQLite Database
+├── static/             # CSS, Images, and JS files
+├── uploads/            # Profile pictures and resumes
+├── templates/          # HTML files (Jinja2)
+│   ├── index.html      # Home and Job Listings
+│   ├── login.html
+│   ├── cadastro.html
+│   ├── perfil.html
+│   ├── admin_dashboard.html
+│   ├── empresa_dashboard.html
+│   └── aluno_dashboard.html
+│
+├── app.py              # Main application code (Routes and Config)
+└── README.md           # Documentation
+
+Email: admin@portal.com
+Password: admin123
