@@ -205,6 +205,16 @@
                         <label>Sobre Mim / Bio</label>
                         <textarea name="sobre_mim" placeholder="Conte um pouco sobre suas experiências e objetivos...">{{ usuario.sobre_mim if usuario.sobre_mim else '' }}</textarea>
                     </div>
+
+                    <div class="form-group full-width">
+    <label><i class="fas fa-graduation-cap"></i> Cursos e Certificados</label>
+    <textarea name="cursos_extras" rows="3" placeholder="Ex: Excel Avançado, Inglês Fluente, Python Básico...">{{ usuario.cursos_extras if usuario.cursos_extras else '' }}</textarea>
+</div>
+
+<div class="form-group full-width">
+    <label><i class="fas fa-university"></i> Dados Bancários (Para Recebimento de Bolsa)</label>
+    <input type="text" name="dados_bancarios" value="{{ usuario.dados_bancarios if usuario.dados_bancarios else '' }}" placeholder="Ex: Banco Itaú, Ag: 0000, Conta: 12345-6, PIX: ...">
+</div>
                 </div>
 
                 <button type="submit" class="btn-save">Salvar Alterações</button>

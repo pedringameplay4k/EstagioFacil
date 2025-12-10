@@ -3,49 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel da Empresa - Publicar Vaga</title>
+    <title>Painel da Empresa - Gerenciar Vagas</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --primary: #2563eb; --sidebar-bg: #1e293b; --bg: #f1f5f9; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { display: flex; background: var(--bg); min-height: 100vh; }
         
-        .sidebar { width: 260px; background: var(--sidebar-bg); color: white; padding: 20px; position: fixed; height: 100%; }
+        /* Sidebar Fixa */
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: white; padding: 20px; position: fixed; height: 100%; z-index: 10; }
         .logo { font-size: 22px; font-weight: bold; margin-bottom: 40px; color: #60a5fa; display: flex; align-items: center; gap: 10px; }
         .menu a { display: flex; align-items: center; gap: 12px; padding: 15px; color: #94a3b8; text-decoration: none; border-radius: 8px; margin-bottom: 5px; transition: 0.3s; }
         .menu a:hover, .menu a.active { background: rgba(255,255,255,0.1); color: white; }
         
         .main { margin-left: 260px; padding: 40px; width: 100%; }
         
-        .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .grid-layout { display: grid; grid-template-columns: 1fr 1.2fr; gap: 30px; }
+        
+        /* Estilos dos Cards */
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); height: fit-content; }
+        .card h2 { margin-bottom: 20px; color: #1e293b; font-size: 20px; display: flex; justify-content: space-between; align-items: center; }
         
         /* Formulário */
-        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .card h2 { margin-bottom: 20px; color: #1e293b; font-size: 20px; }
-        
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: #475569; }
         input, select, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
         input:focus, textarea:focus { border-color: var(--primary); outline: none; }
-        
         .btn-submit { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; }
         .btn-submit:hover { background: #1d4ed8; }
 
         /* Lista de Vagas */
-        .vaga-item { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-        .vaga-info h4 { margin-bottom: 5px; color: #334155; }
-        .vaga-info p { font-size: 12px; color: #64748b; }
-        .btn-delete { color: #ef4444; text-decoration: none; font-size: 14px; padding: 5px 10px; border: 1px solid #ef4444; border-radius: 6px; }
-        .btn-delete:hover { background: #ef4444; color: white; }
+        .vaga-item { background: #f8fafc; border: 1px solid #e2e8f0; padding: 20px; border-radius: 10px; margin-bottom: 15px; transition: 0.3s; }
+        .vaga-item:hover { border-color: #cbd5e1; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         
-        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+        .vaga-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .vaga-title { font-size: 16px; font-weight: 700; color: #334155; }
+        .vaga-date { font-size: 12px; color: #94a3b8; }
+        
+        .vaga-stats { display: flex; gap: 15px; margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0; align-items: center; }
+        .stat-badge { background: #eff6ff; color: var(--primary); padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+        
+        .btn-candidates { background: var(--primary); color: white; border: none; padding: 6px 15px; border-radius: 6px; font-size: 13px; cursor: pointer; text-decoration: none; }
+        .btn-candidates:hover { background: #1d4ed8; }
+        
+        .btn-delete { color: #ef4444; background: none; border: none; cursor: pointer; font-size: 16px; }
+
+        /* MODAL DE CANDIDATOS */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none; justify-content: center; align-items: center; backdrop-filter: blur(3px); }
+        .modal-content { background: white; width: 600px; max-height: 85vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .modal-header { padding: 20px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .modal-body { padding: 20px; overflow-y: auto; }
+        
+        .candidate-card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .candidate-info h4 { margin: 0 0 5px 0; color: #1e293b; font-size: 16px; }
+        .candidate-info p { margin: 0; color: #64748b; font-size: 13px; display: flex; gap: 10px; align-items: center; }
+        .candidate-info i { color: #94a3b8; width: 16px; }
+        
+        .btn-cv { background: #0f172a; color: white; text-decoration: none; padding: 8px 15px; border-radius: 6px; font-size: 13px; display: flex; align-items: center; gap: 6px; transition: 0.2s; }
+        .btn-cv:hover { background: #334155; }
+        .no-cv { color: #ef4444; font-size: 12px; font-weight: 600; }
+
+        .close-modal { cursor: pointer; font-size: 24px; color: #94a3b8; border: none; background: none; }
+        .close-modal:hover { color: #ef4444; }
     </style>
 </head>
 <body>
+
     <div class="sidebar">
         <div class="logo"><i class="fas fa-briefcase"></i> Área Empresa</div>
         <nav class="menu">
-            <a href="#" class="active"><i class="fas fa-plus-circle"></i> Publicar Vagas</a>
+            <a href="#" class="active"><i class="fas fa-columns"></i> Gestão de Vagas</a>
             <a href="/perfil"><i class="fas fa-building"></i> Meu Perfil</a>
             <a href="/"><i class="fas fa-globe"></i> Ver Site</a>
             <a href="/logout" style="color: #ef4444; margin-top: auto;"><i class="fas fa-sign-out-alt"></i> Sair</a>
@@ -56,18 +85,21 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
                 {% for category, message in messages %}
-                    <div class="alert">{{ message }}</div>
+                    <div style="padding: 15px; border-radius: 8px; margin-bottom: 20px; background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0;">
+                        {{ message }}
+                    </div>
                 {% endfor %}
             {% endif %}
         {% endwith %}
 
         <div class="grid-layout">
+            
             <div class="card">
-                <h2><i class="fas fa-pen"></i> Criar Nova Vaga</h2>
+                <h2><i class="fas fa-plus-circle"></i> Nova Vaga</h2>
                 <form method="POST">
                     <div class="form-group">
-                        <label>Título da Vaga</label>
-                        <input type="text" name="titulo" placeholder="Ex: Desenvolvedor Python Júnior" required>
+                        <label>Cargo / Título</label>
+                        <input type="text" name="titulo" placeholder="Ex: Analista de Marketing" required>
                     </div>
                     
                     <div class="form-group">
@@ -81,10 +113,10 @@
                         </select>
                     </div>
 
-                    <div class="grid-layout" style="gap: 15px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
                         <div class="form-group">
-                            <label>Salário / Bolsa</label>
-                            <input type="text" name="salario" placeholder="Ex: R$ 1.500,00">
+                            <label>Salário</label>
+                            <input type="text" name="salario" placeholder="R$ 1.500,00">
                         </div>
                         <div class="form-group">
                             <label>Modelo</label>
@@ -98,39 +130,125 @@
 
                     <div class="form-group">
                         <label>Localização</label>
-                        <input type="text" name="localizacao" placeholder="Ex: São Paulo - SP">
+                        <input type="text" name="localizacao" placeholder="Cidade - UF">
                     </div>
 
                     <div class="form-group">
                         <label>Benefícios</label>
-                        <input type="text" name="beneficios" placeholder="Ex: VR, VT, Gympass">
+                        <input type="text" name="beneficios" placeholder="Separe por vírgula">
                     </div>
 
                     <div class="form-group">
-                        <label>Descrição Completa</label>
-                        <textarea name="descricao" rows="5" placeholder="Descreva as atividades e requisitos..." required></textarea>
+                        <label>Descrição</label>
+                        <textarea name="descricao" rows="4" placeholder="Requisitos e atividades..." required></textarea>
                     </div>
 
-                    <button type="submit" class="btn-submit">Publicar Vaga Agora</button>
+                    <button type="submit" class="btn-submit">Publicar Vaga</button>
                 </form>
             </div>
 
             <div class="card">
-                <h2><i class="fas fa-list"></i> Minhas Vagas Publicadas</h2>
+                <h2>
+                    <span><i class="fas fa-list-alt"></i> Vagas Ativas</span>
+                    <span style="font-size: 14px; background: #eff6ff; color: var(--primary); padding: 5px 10px; border-radius: 20px;">
+                        {{ vagas|length }} Vagas
+                    </span>
+                </h2>
                 
-                {% for vaga in vagas %}
-                <div class="vaga-item">
-                    <div class="vaga-info">
-                        <h4>{{ vaga.titulo }}</h4>
-                        <p><i class="fas fa-map-marker-alt"></i> {{ vaga.localizacao }} • {{ vaga.data_criacao.strftime('%d/%m') }}</p>
+                <div style="overflow-y: auto; max-height: 700px; padding-right: 5px;">
+                    {% for vaga in vagas %}
+                    <div class="vaga-item">
+                        <div class="vaga-header">
+                            <div>
+                                <div class="vaga-title">{{ vaga.titulo }}</div>
+                                <div class="vaga-date">Publicada em {{ vaga.data_criacao.strftime('%d/%m/%Y') }}</div>
+                            </div>
+                            <a href="/vaga/excluir/{{ vaga.id }}" class="btn-delete" onclick="return confirm('Excluir esta vaga?')"><i class="fas fa-trash"></i></a>
+                        </div>
+                        
+                        <div class="vaga-stats">
+                            <div class="stat-badge">
+                                <i class="fas fa-user-friends"></i> {{ vaga.candidaturas|length }} Candidatos
+                            </div>
+                            
+                            <button class="btn-candidates" onclick="openCandidatesModal('{{ vaga.id }}')">
+                                Ver Interessados
+                            </button>
+                        </div>
+
+                        <div id="candidatos-data-{{ vaga.id }}" style="display: none;">
+                            {% for cand in vaga.candidaturas %}
+                            <div class="candidate-card">
+                                <div class="candidate-info">
+                                    <h4>{{ cand.usuario.nome }}</h4>
+                                    <p><i class="fas fa-envelope"></i> {{ cand.usuario.email }}</p>
+                                    <p><i class="fas fa-phone"></i> {{ cand.usuario.telefone }}</p>
+                                    <p><i class="fas fa-id-card"></i> CPF: {{ cand.usuario.cpf }}</p>
+                                </div>
+                                <div>
+                                    {% if cand.usuario.curriculo %}
+                                        <a href="{{ url_for('uploaded_file', filename=cand.usuario.curriculo) }}" target="_blank" class="btn-cv">
+                                            <i class="fas fa-file-download"></i> Currículo
+                                        </a>
+                                    {% else %}
+                                        <span class="no-cv">Sem CV</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% else %}
+                                <div style="text-align: center; padding: 40px; color: #94a3b8;">
+                                    <i class="fas fa-inbox" style="font-size: 40px; margin-bottom: 10px;"></i>
+                                    <p>Ainda não há candidatos para esta vaga.</p>
+                                </div>
+                            {% endfor %}
+                        </div>
                     </div>
-                    <a href="/vaga/excluir/{{ vaga.id }}" class="btn-delete" onclick="return confirm('Tem certeza?')"><i class="fas fa-trash"></i></a>
+                    {% else %}
+                        <div style="text-align: center; padding: 50px; color: #94a3b8;">
+                            <p>Você ainda não criou nenhuma vaga.</p>
+                        </div>
+                    {% endfor %}
                 </div>
-                {% else %}
-                    <p style="color: #94a3b8; text-align: center; margin-top: 50px;">Você ainda não publicou nenhuma vaga.</p>
-                {% endfor %}
             </div>
         </div>
     </div>
+
+    <div id="candidatesModal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 style="margin: 0; color: #1e293b;">Lista de Candidatos</h3>
+                <button class="close-modal" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBodyContent">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // Função para abrir o modal e carregar os candidatos da vaga específica
+        function openCandidatesModal(vagaId) {
+            // Pega o HTML escondido dentro da vaga
+            const content = document.getElementById('candidatos-data-' + vagaId).innerHTML;
+            
+            // Joga dentro do modal
+            document.getElementById('modalBodyContent').innerHTML = content;
+            
+            // Mostra o modal
+            document.getElementById('candidatesModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('candidatesModal').style.display = 'none';
+        }
+
+        // Fechar ao clicar fora
+        window.onclick = function(event) {
+            const modal = document.getElementById('candidatesModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    </script>
+
 </body>
 </html>

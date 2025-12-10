@@ -4,6 +4,7 @@ import os
 from werkzeug.utils import secure_filename
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import text
+import random
 
 # Configuração inicial do aplicativo
 app = Flask(__name__)
@@ -43,6 +44,11 @@ class Usuario(db.Model):
     data_criacao = db.Column(db.DateTime, server_default=db.func.now())
     data_atualizacao = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
+    sobre_mim = db.Column(db.Text, nullable=True)
+    
+    # NOVOS CAMPOS
+    dados_bancarios = db.Column(db.String(200), nullable=True) # Ex: Nubank, Ag 0001, Cc 123-4
+    cursos_extras = db.Column(db.Text, nullable=True) # Lista de cursos
 
     # --- Adicione isso ABAIXO da class Usuario no app.py ---
 
@@ -61,6 +67,151 @@ class Vaga(db.Model):
     empresa = db.relationship('Usuario', backref=db.backref('vagas', lazy=True))
     
     data_criacao = db.Column(db.DateTime, server_default=db.func.now())
+
+class Candidatura(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    vaga_id = db.Column(db.Integer, db.ForeignKey('vaga.id'), nullable=False)
+    data_aplicacao = db.Column(db.DateTime, server_default=db.func.now())
+    
+    usuario = db.relationship('Usuario', backref=db.backref('candidaturas', lazy=True))
+    vaga = db.relationship('Vaga', backref=db.backref('candidaturas', lazy=True))
+# --- Adicione junto com as outras rotas ---
+
+@app.route('/setup/popular-banco')
+def popular_banco():
+    # 1. Cria ADMIN (Se não existir)
+    if not Usuario.query.filter_by(email='admin@portal.com').first():
+        admin = Usuario(tipo='admin', nome='Administrador', email='admin@portal.com', senha=generate_password_hash('admin123'))
+        db.session.add(admin)
+
+    # 2. Cria EMPRESAS Fakes
+    empresas_dados = [
+        {'nome': 'Google Brasil', 'email': 'vagas@google.com', 'cnpj': '00.000.000/0001-01', 'end': 'São Paulo, SP'},
+        {'nome': 'Nubank', 'email': 'jobs@nubank.com.br', 'cnpj': '11.111.111/0001-01', 'end': 'Remoto / SP'},
+        {'nome': 'Amazon AWS', 'email': 'aws@amazon.com', 'cnpj': '22.222.222/0001-01', 'end': 'Rio de Janeiro, RJ'}
+    ]
+    
+    lista_empresas_objs = []
+    for emp in empresas_dados:
+        if not Usuario.query.filter_by(email=emp['email']).first():
+            nova_empresa = Usuario(
+                tipo='empresa',
+                nome=emp['nome'],
+                email=emp['email'],
+                senha=generate_password_hash('123456'), # Senha padrão
+                telefone='(11) 99999-9999',
+                cnpj=emp['cnpj'],
+                endereco=emp['end'],
+                sobre_mim=f"Somos a {emp['nome']}, líderes em inovação e tecnologia."
+            )
+            db.session.add(nova_empresa)
+            lista_empresas_objs.append(nova_empresa)
+    
+    db.session.commit() # Salva empresas para gerar os IDs
+
+    # 3. Cria ALUNOS Fakes
+    alunos_dados = [
+        {'nome': 'Ana Silva', 'email': 'ana@aluno.com'},
+        {'nome': 'Carlos Souza', 'email': 'carlos@aluno.com'},
+        {'nome': 'Beatriz Lima', 'email': 'bia@aluno.com'}
+    ]
+    
+    lista_alunos_objs = []
+    for alu in alunos_dados:
+        if not Usuario.query.filter_by(email=alu['email']).first():
+            novo_aluno = Usuario(
+                tipo='aluno',
+                nome=alu['nome'],
+                email=alu['email'],
+                senha=generate_password_hash('123456'),
+                telefone='(11) 98888-8888',
+                cpf='123.456.789-00',
+                cursos_extras='Inglês Avançado, Excel Intermediário, Python Básico',
+                dados_bancarios='Nubank, Ag 0001, Conta 12345-6'
+            )
+            db.session.add(novo_aluno)
+            lista_alunos_objs.append(novo_aluno)
+            
+    db.session.commit() # Salva alunos
+
+    # Recarrega as empresas do banco para garantir que temos os objetos conectados
+    empresas_no_banco = Usuario.query.filter_by(tipo='empresa').all()
+
+    # 4. Cria VAGAS Fakes
+    if empresas_no_banco:
+        vagas_titulos = [
+            ('Desenvolvedor Python Jr', 'ti', 'R$ 2.500'),
+            ('Estágio em Marketing', 'mkt', 'R$ 1.200'),
+            ('Assistente Administrativo', 'adm', 'R$ 1.500'),
+            ('Analista de Dados Pleno', 'ti', 'R$ 4.000'),
+            ('Estágio em RH', 'rh', 'R$ 1.300'),
+            ('Engenheiro Civil Trainee', 'eng', 'R$ 3.000')
+        ]
+        
+        for titulo, area, salario in vagas_titulos:
+            # Escolhe uma empresa aleatória para ser dona da vaga
+            empresa_dona = random.choice(empresas_no_banco)
+            
+            nova_vaga = Vaga(
+                titulo=titulo,
+                descricao=f"Vaga incrível para {titulo}. Necessário proatividade e vontade de aprender.\n\nRequisitos:\n- Conhecimento básico na área\n- Boa comunicação.",
+                salario=salario,
+                localizacao=empresa_dona.endereco,
+                tipo=random.choice(['Presencial', 'Remoto', 'Híbrido']),
+                area=area,
+                beneficios="VR, VT, Plano de Saúde, Gympass",
+                empresa_id=empresa_dona.id
+            )
+            db.session.add(nova_vaga)
+        
+        db.session.commit()
+
+    # 5. Cria CANDIDATURAS Fakes (Alunos se aplicando)
+    alunos_no_banco = Usuario.query.filter_by(tipo='aluno').all()
+    vagas_no_banco = Vaga.query.all()
+    
+    if alunos_no_banco and vagas_no_banco:
+        for aluno in alunos_no_banco:
+            # Cada aluno se candidata a 2 vagas aleatórias
+            vagas_escolhidas = random.sample(vagas_no_banco, k=min(2, len(vagas_no_banco)))
+            for vaga in vagas_escolhidas:
+                # Verifica se já existe para não duplicar
+                if not Candidatura.query.filter_by(usuario_id=aluno.id, vaga_id=vaga.id).first():
+                    cand = Candidatura(usuario_id=aluno.id, vaga_id=vaga.id)
+                    db.session.add(cand)
+        
+        db.session.commit()
+
+    flash('🤖 Bot executado! Banco de dados populado com sucesso.', 'success')
+    return redirect(url_for('home'))
+
+@app.route('/vaga/candidatar/<int:vaga_id>')
+def candidatar_vaga(vaga_id):
+    # 1. Verifica se está logado
+    if 'user_id' not in session:
+        flash('Faça login para se candidatar.', 'warning')
+        return redirect(url_for('login'))
+    
+    # 2. Verifica se é Aluno (Empresa/Admin não candidata)
+    if session['user_type'] != 'aluno':
+        flash('Apenas alunos podem se candidatar a vagas.', 'error')
+        return redirect(url_for('home'))
+        
+    # 3. Verifica se JÁ se candidatou antes (Evita duplicidade)
+    ja_aplicou = Candidatura.query.filter_by(usuario_id=session['user_id'], vaga_id=vaga_id).first()
+    if ja_aplicou:
+        flash('Você já se candidatou para esta vaga!', 'info')
+        return redirect(url_for('home'))
+    
+    # 4. Salva a candidatura
+    nova_candidatura = Candidatura(usuario_id=session['user_id'], vaga_id=vaga_id)
+    db.session.add(nova_candidatura)
+    db.session.commit()
+    
+    flash('Candidatura enviada com sucesso! Boa sorte 🚀', 'success')
+    return redirect(url_for('home'))        
+
 # Função auxiliar para verificar extensão do ficheiro
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -233,14 +384,16 @@ def excluir_vaga(id):
 @app.route('/aluno/dashboard')
 def aluno_dashboard():
     if 'user_type' not in session or session['user_type'] != 'aluno':
-        flash('Acesso não autorizado.', 'warning')
+        flash('Acesso restrito.', 'warning')
         return redirect(url_for('login'))
     
-    # Buscar dados do aluno atual
+    # Busca candidaturas e dados do aluno
+    minhas_candidaturas = Candidatura.query.filter_by(usuario_id=session['user_id']).order_by(Candidatura.data_aplicacao.desc()).all()
     aluno = Usuario.query.get(session['user_id'])
     
     return render_template('aluno_dashboard.html', 
                          user_name=session.get('user_name'),
+                         candidaturas=minhas_candidaturas,
                          aluno=aluno)
 
 @app.route('/vagas')
@@ -364,6 +517,8 @@ def atualizar_perfil():
         elif usuario.tipo == 'empresa':
             usuario.cnpj = request.form.get('cnpj', usuario.cnpj)
             usuario.endereco = request.form.get('endereco', usuario.endereco)
+            usuario.dados_bancarios = request.form.get('dados_bancarios', usuario.dados_bancarios)
+            usuario.cursos_extras = request.form.get('cursos_extras', usuario.cursos_extras)
             
         # Lógica da FOTO DE PERFIL
         arquivo_foto = request.files.get('foto_perfil')

@@ -769,11 +769,7 @@
     <ul>
         
         {% if session.user_type == 'admin' %}
-            <li>
-                <a href="/admin/dashboard" style="color: #f59e0b; font-weight: bold;">
-                    <i class="fas fa-crown"></i> Painel Admin
-                </a>
-            </li>
+           
         
         {% elif session.user_type == 'empresa' %}
             <li>
@@ -787,25 +783,43 @@
 </nav>
             
             <div class="user-actions">
-                {% if session.user_id %}
-                    <div class="logged-user" style="display: flex; align-items: center; gap: 15px;">
-                        <span style="color: white; font-size: 15px;">
-                            Olá, <strong>{{ session.user_name.split()[0] }}</strong>
-                        </span>
-                        
-                        <a href="/perfil" class="btn" style="background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.3); padding: 8px 15px;">
-                            <i class="fas fa-user-circle"></i> Meu Perfil
-                        </a>
+    {% if session.user_id %}
+        <div class="logged-user" style="display: flex; align-items: center; gap: 10px;">
+            
+            <span style="color: white; font-size: 14px; margin-right: 5px;">
+                Olá, <strong>{{ session.user_name.split()[0] }}</strong>
+            </span>
+            
+            <a href="/perfil" class="btn" style="background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 8px 12px; font-size: 13px;" title="Editar meus dados">
+                <i class="fas fa-user-circle"></i> Meu Perfil
+            </a>
 
-                        <a href="/logout" class="btn" style="background: transparent; color: #fca5a5; border: 1px solid #fca5a5; padding: 8px 15px;" title="Sair do sistema">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </a>
-                    </div>
-                {% else %}
-                    <a href="/login" class="btn btn-outline">Entrar</a>
-                    <a href="/cadastro" class="btn btn-primary">Cadastrar</a>
-                {% endif %}
-            </div>
+            {% if session.user_type == 'admin' %}
+                <a href="/admin/dashboard" class="btn" style="background: #f59e0b; color: white; border: none; padding: 8px 12px; font-size: 13px; font-weight: bold;">
+                    <i class="fas fa-cogs"></i> Painel Admin
+                </a>
+            
+            {% elif session.user_type == 'empresa' %}
+                <a href="/empresa/dashboard" class="btn" style="background: #10b981; color: white; border: none; padding: 8px 12px; font-size: 13px; font-weight: bold;">
+                    <i class="fas fa-briefcase"></i> Painel Empresa
+                </a>
+
+            {% else %}
+                <a href="/aluno/dashboard" class="btn" style="background: #2563eb; color: white; border: none; padding: 8px 12px; font-size: 13px; font-weight: bold;">
+                    <i class="fas fa-columns"></i> Área Aluno
+                </a>
+            {% endif %}
+
+            <a href="/logout" class="btn" style="background: transparent; color: #fca5a5; border: 1px solid #fca5a5; padding: 8px 12px;" title="Sair do sistema">
+                <i class="fas fa-sign-out-alt"></i>
+            </a>
+        </div>
+
+    {% else %}
+        <a href="/login" class="btn btn-outline">Entrar</a>
+        <a href="/cadastro" class="btn btn-primary">Cadastrar</a>
+    {% endif %}
+</div>
         </div>
     </div>
 </header>
@@ -924,8 +938,8 @@
             {% if session.user_id %}
                 <button class="apply-btn" 
     onclick="abrirModalVaga(
-        '{{ vaga.titulo }}', 
-        '{{ vaga.empresa.nome if vaga.empresa else 'Empresa Confidencial' }}', 
+        {{ vaga.id }},  '{{ vaga.titulo }}', 
+        '{{ vaga.empresa.nome if vaga.empresa else 'Empresa Parceira' }}', 
         `{{ vaga.descricao }}`, 
         '{{ vaga.salario }}',
         '{{ vaga.localizacao }}',
@@ -964,22 +978,6 @@
                 <div class="footer-column">
                     <h3>PortalEstágios</h3>
                     <p>Conectando talentos a oportunidades desde 2023. Nosso objetivo é facilitar o encontro entre estudantes e empresas.</p>
-                    <div class="social-links">
-                        <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
-                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-                    </div>
-                </div>
-                
-                <div class="footer-column">
-                    <h3>Para Candidatos</h3>
-                    <ul>
-                        <li><a href="/vagas">Buscar Vagas</a></li>
-                        <li><a href="/cadastro">Criar Conta</a></li>
-                        <li><a href="/curriculo">Criar Currículo</a></li>
-                        <li><a href="/dicas">Dicas de Carreira</a></li>
-                    </ul>
                 </div>
                 
                 <div class="footer-column">
@@ -1003,7 +1001,7 @@
             </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2023 EstágioFácil. Todos os direitos reservados.</p>
+                <p>&copy; 2025 EstágioFácil. Todos os direitos reservados.</p>
                 <p><a href="/privacidade" style="color: #cbd5e1; margin: 0 10px;">Política de Privacidade</a> | 
                    <a href="/termos" style="color: #cbd5e1; margin: 0 10px;">Termos de Uso</a></p>
             </div>
@@ -1050,39 +1048,45 @@
         </div>
 
         <div class="modal-footer">
-            <button class="btn-action" onclick="alert('Candidatura enviada com sucesso! (Simulação)')">
-                <i class="fas fa-paper-plane"></i> Quero esta Vaga
-            </button>
-        </div>
+    <button id="btnAcaoModal" class="btn-action">
+        <i class="fas fa-paper-plane"></i> Quero esta Vaga
+    </button>
+</div>
     </div>
 </div>
 <script>
-    // Função para abrir o Modal preenchendo os dados
-    function abrirModalVaga(titulo, empresa, descricao, salario, local, tipo, beneficios) {
-        // 1. Preenche os textos
+    // Função atualizada: Agora recebe o ID também
+    function abrirModalVaga(id, titulo, empresa, descricao, salario, local, tipo, beneficios) {
+        
+        // Preenche os textos (Igual antes)
         document.getElementById('modalTitulo').textContent = titulo;
         document.getElementById('modalEmpresa').textContent = empresa;
         document.getElementById('modalDescricao').textContent = descricao;
         document.getElementById('modalBeneficios').textContent = beneficios || "Não informado";
 
-        // 2. Preenche as Tags Coloridas (Salário, Local, Tipo)
+        // Tags (Igual antes)
         const tagsContainer = document.getElementById('modalTags');
         tagsContainer.innerHTML = `
-            <span class="modal-tag" style="background: #ecfdf5; color: #059669;"><i class="fas fa-money-bill-wave"></i> ${salario}</span>
+            <span class="modal-tag" style="background: #ecfdf5; color: #059669;">${salario}</span>
             <span class="modal-tag"><i class="fas fa-map-marker-alt"></i> ${local}</span>
             <span class="modal-tag"><i class="fas fa-clock"></i> ${tipo}</span>
         `;
 
-        // 3. Mostra o Modal
+        // --- A MÁGICA ACONTECE AQUI ---
+        // Atualiza o botão para mandar para a rota certa com o ID da vaga
+        const btnAcao = document.getElementById('btnAcaoModal');
+        btnAcao.onclick = function() {
+            window.location.href = `/vaga/candidatar/${id}`;
+        };
+
+        // Mostra o modal
         document.getElementById('modalDetalhes').style.display = 'flex';
     }
 
-    // Função para fechar
     function fecharModalVaga() {
         document.getElementById('modalDetalhes').style.display = 'none';
     }
 
-    // Fechar ao clicar fora da caixa branca
     window.onclick = function(event) {
         const modal = document.getElementById('modalDetalhes');
         if (event.target == modal) {
