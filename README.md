@@ -10,9 +10,9 @@
 
 - **🏠 Home / Job Showcase:** View available internship positions with dynamic filters (Area, Salary, Work Model).
 - **👥 Multiple Profiles:**
-  - **Student:** Can view jobs, upload resumes, and edit their profile.
-  - **Company:** Can register jobs and manage candidates (in development).
-  - **Admin:** Access to an exclusive dashboard with system statistics.
+  - **Student:** Can view jobs, upload resumes, apply for positions, and edit their profile.
+  - **Company:** Can register, manage their profile, and post vacancies.
+  - **Admin:** Access to an exclusive dashboard with system statistics and user management.
 - **🔐 Secure Authentication:** Login and Registration with encrypted passwords (Hash).
 - **👤 User Profile:** Edit personal data, "About Me" section, and **Profile Picture Upload**.
 - **📊 Admin Dashboard:** Overview of registered students, companies, and sign-up metrics.
