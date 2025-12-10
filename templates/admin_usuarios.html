@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciar Usuários - Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #2563eb; --sidebar-bg: #1e293b; --bg: #f1f5f9; --text: #334155; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        
+        body { display: flex; background: var(--bg); min-height: 100vh; color: var(--text); }
+        
+        /* Sidebar (Igual ao Dashboard) */
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 20px; position: fixed; height: 100%; z-index: 100; }
+        .logo { font-size: 22px; font-weight: bold; margin-bottom: 40px; display: flex; align-items: center; gap: 10px; color: #60a5fa; }
+        .menu a { display: flex; align-items: center; gap: 12px; padding: 15px; color: #94a3b8; text-decoration: none; border-radius: 8px; margin-bottom: 5px; transition: 0.3s; }
+        .menu a:hover, .menu a.active { background: rgba(255,255,255,0.1); color: white; }
+        
+        /* Conteúdo Principal */
+        .main { margin-left: 260px; padding: 40px; width: 100%; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h2 { color: #1e293b; font-size: 24px; }
+        
+        /* Barra de Busca */
+        .search-bar { background: white; padding: 10px 20px; border-radius: 30px; display: flex; align-items: center; gap: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); width: 300px; }
+        .search-bar input { border: none; outline: none; width: 100%; font-size: 14px; }
+        .search-bar i { color: #94a3b8; }
+
+        /* Tabela de Usuários */
+        .table-container { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        
+        th { background: #f8fafc; text-align: left; padding: 15px 20px; font-size: 13px; color: #64748b; font-weight: 600; border-bottom: 1px solid #e2e8f0; }
+        td { padding: 15px 20px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        tr:last-child td { border-bottom: none; }
+        tr:hover { background-color: #f8fafc; }
+
+        /* Estilos da Linha */
+        .user-info { display: flex; align-items: center; gap: 15px; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #64748b; }
+        .user-text h4 { font-size: 14px; margin-bottom: 2px; color: #1e293b; }
+        .user-text span { font-size: 12px; color: #64748b; }
+
+        .badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .badge-aluno { background: #eff6ff; color: #2563eb; }
+        .badge-empresa { background: #f0fdf4; color: #16a34a; }
+        .badge-admin { background: #fef2f2; color: #ef4444; }
+
+        .actions { display: flex; gap: 10px; }
+        .btn-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-view { background: #eff6ff; color: #2563eb; }
+        .btn-view:hover { background: #2563eb; color: white; }
+        .btn-delete { background: #fef2f2; color: #ef4444; }
+        .btn-delete:hover { background: #ef4444; color: white; }
+
+        /* Modal */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        .modal-content { background: white; width: 500px; border-radius: 16px; padding: 30px; position: relative; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .close-modal { position: absolute; top: 20px; right: 20px; font-size: 20px; cursor: pointer; color: #94a3b8; }
+        
+        .modal-header { text-align: center; margin-bottom: 25px; }
+        .modal-avatar { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; background: #eff6ff; color: var(--primary); object-fit: cover; }
+        
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .info-item label { display: block; font-size: 11px; color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-bottom: 5px; }
+        .info-item p { font-size: 14px; font-weight: 500; color: #334155; }
+        
+        .full-width { grid-column: span 2; }
+        .bio-box { background: #f8fafc; padding: 15px; border-radius: 8px; font-size: 13px; color: #475569; line-height: 1.5; }
+        
+        .btn-download { display: block; width: 100%; padding: 12px; background: #0f172a; color: white; text-align: center; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 15px; transition: 0.2s; }
+        .btn-download:hover { background: #334155; }
+        .btn-disabled { background: #cbd5e1; cursor: not-allowed; pointer-events: none; }
+
+        /* Mensagens Flash */
+        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; display: flex; align-items: center; gap: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo"><i class="fas fa-shield-alt"></i> AdminPanel</div>
+        <nav class="menu">
+            <a href="/admin/dashboard"><i class="fas fa-chart-pie"></i> Dashboard</a>
+            <a href="/admin/usuarios" class="active"><i class="fas fa-users"></i> Gerenciar Usuários</a>
+            <a href="/"><i class="fas fa-globe"></i> Ver Site</a>
+            <a href="/logout" style="color: #ef4444; margin-top: auto;"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </nav>
+    </div>
+
+    <div class="main">
+        
+        <div class="header">
+            <div>
+                <h2>Gerenciar Usuários</h2>
+                <p style="color: #64748b; font-size: 14px;">Visualize, edite ou remova usuários do sistema.</p>
+            </div>
+            <div class="search-bar">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="Buscar por nome ou email..." onkeyup="filterTable()">
+            </div>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert">
+                        <i class="fas fa-check-circle"></i> {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="table-container">
+            <table id="userTable">
+                <thead>
+                    <tr>
+                        <th>USUÁRIO</th>
+                        <th>TIPO</th>
+                        <th>TELEFONE</th>
+                        <th>DATA CADASTRO</th>
+                        <th>AÇÕES</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usuario in usuarios %}
+                    <tr>
+                        <td>
+                            <div class="user-info">
+                                {% if usuario.foto_perfil %}
+                                    <img src="{{ url_for('uploaded_file', filename=usuario.foto_perfil) }}" class="avatar" alt="Foto">
+                                {% else %}
+                                    <div class="avatar">{{ usuario.nome[0]|upper }}</div>
+                                {% endif %}
+                                <div class="user-text">
+                                    <h4>{{ usuario.nome }}</h4>
+                                    <span>{{ usuario.email }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ usuario.tipo }}">{{ usuario.tipo|upper }}</span>
+                        </td>
+                        <td>{{ usuario.telefone if usuario.telefone else '---' }}</td>
+                        <td>{{ usuario.data_criacao.strftime('%d/%m/%Y') }}</td>
+                        <td>
+                            <div class="actions">
+                                <button class="btn-icon btn-view" 
+                                        onclick="openModal(
+                                            '{{ usuario.nome }}', 
+                                            '{{ usuario.email }}', 
+                                            '{{ usuario.tipo }}', 
+                                            '{{ usuario.telefone }}',
+                                            '{{ usuario.cpf if usuario.cpf else usuario.cnpj }}',
+                                            '{{ usuario.endereco if usuario.endereco else '' }}',
+                                            '{{ usuario.sobre_mim if usuario.sobre_mim else 'Sem descrição.' }}',
+                                            '{{ usuario.curriculo if usuario.curriculo else '' }}',
+                                            '{{ url_for('uploaded_file', filename=usuario.foto_perfil) if usuario.foto_perfil else '' }}'
+                                        )">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                
+                                {% if usuario.id != session.user_id %}
+                                    <a href="/admin/usuario/excluir/{{ usuario.id }}" class="btn-icon btn-delete" onclick="return confirm('Tem certeza que deseja excluir este usuário? Esta ação não pode ser desfeita.')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; color: #94a3b8;">Nenhum usuário encontrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="userModal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal()">&times;</span>
+            
+            <div class="modal-header">
+                <img id="modalImg" src="" class="modal-avatar" style="display: none;">
+                <div id="modalInitial" class="modal-avatar" style="display: flex;">U</div>
+                <h3 id="modalName">Nome do Usuário</h3>
+                <span id="modalType" class="badge badge-aluno">TIPO</span>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <label>Email</label>
+                    <p id="modalEmail">email@exemplo.com</p>
+                </div>
+                <div class="info-item">
+                    <label>Telefone</label>
+                    <p id="modalPhone">(00) 0000-0000</p>
+                </div>
+                <div class="info-item">
+                    <label id="labelDoc">CPF/CNPJ</label>
+                    <p id="modalDoc">000.000.000-00</p>
+                </div>
+                <div class="info-item full-width" id="addressBox">
+                    <label>Endereço</label>
+                    <p id="modalAddress">Rua Exemplo, 123</p>
+                </div>
+                <div class="info-item full-width">
+                    <label>Sobre</label>
+                    <div class="bio-box" id="modalBio">
+                        Descrição do usuário...
+                    </div>
+                </div>
+            </div>
+
+            <a id="btnCurriculo" href="#" class="btn-download" target="_blank">
+                <i class="fas fa-file-download"></i> Baixar Currículo
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Função de Filtro da Tabela
+        function filterTable() {
+            var input, filter, table, tr, td, i, txtValue;
+            input = document.getElementById("searchInput");
+            filter = input.value.toUpperCase();
+            table = document.getElementById("userTable");
+            tr = table.getElementsByTagName("tr");
+
+            for (i = 0; i < tr.length; i++) {
+                td = tr[i].getElementsByTagName("td")[0]; // Coluna Nome/Email
+                if (td) {
+                    txtValue = td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        tr[i].style.display = "";
+                    } else {
+                        tr[i].style.display = "none";
+                    }
+                }
+            }
+        }
+
+        // Funções do Modal
+        function openModal(nome, email, tipo, telefone, doc, endereco, bio, curriculo, fotoUrl) {
+            document.getElementById('modalName').textContent = nome;
+            document.getElementById('modalEmail').textContent = email;
+            document.getElementById('modalType').textContent = tipo.toUpperCase();
+            document.getElementById('modalType').className = `badge badge-${tipo}`;
+            document.getElementById('modalPhone').textContent = telefone || 'Não informado';
+            document.getElementById('modalDoc').textContent = doc || 'Não informado';
+            document.getElementById('modalBio').textContent = bio;
+
+            // Foto
+            const img = document.getElementById('modalImg');
+            const initial = document.getElementById('modalInitial');
+            if (fotoUrl) {
+                img.src = fotoUrl;
+                img.style.display = 'block';
+                initial.style.display = 'none';
+            } else {
+                img.style.display = 'none';
+                initial.style.display = 'flex';
+                initial.textContent = nome.charAt(0).toUpperCase();
+            }
+
+            // Campos específicos
+            const labelDoc = document.getElementById('labelDoc');
+            const addressBox = document.getElementById('addressBox');
+            
+            if (tipo === 'empresa') {
+                labelDoc.textContent = 'CNPJ';
+                addressBox.style.display = 'block';
+                document.getElementById('modalAddress').textContent = endereco || 'Não informado';
+            } else {
+                labelDoc.textContent = 'CPF';
+                addressBox.style.display = 'none';
+            }
+
+            // Currículo
+            const btnCv = document.getElementById('btnCurriculo');
+            if (tipo === 'aluno' && curriculo) {
+                btnCv.href = `/uploads/${curriculo}`;
+                btnCv.classList.remove('btn-disabled');
+                btnCv.innerHTML = '<i class="fas fa-file-download"></i> Baixar Currículo';
+                btnCv.style.display = 'block';
+            } else if (tipo === 'aluno') {
+                btnCv.href = '#';
+                btnCv.classList.add('btn-disabled');
+                btnCv.innerHTML = '<i class="fas fa-times-circle"></i> Currículo não enviado';
+                btnCv.style.display = 'block';
+            } else {
+                btnCv.style.display = 'none'; // Empresas não tem currículo
+            }
+
+            document.getElementById('userModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('userModal').style.display = 'none';
+        }
+
+        // Fechar ao clicar fora
+        window.onclick = function(event) {
+            if (event.target == document.getElementById('userModal')) {
+                closeModal();
+            }
+        }
+    </script>
+
+</body>
+</html>

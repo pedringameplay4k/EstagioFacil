@@ -493,12 +493,12 @@
             
             <div class="form-row">
                 <div class="form-group">
-                    <label for="nome">Nome Completo</label>
-                    <div class="input-with-icon">
-                        <i class="fas fa-user"></i>
-                        <input type="text" id="nome" name="nome" placeholder="Digite seu nome completo" required>
-                    </div>
-                </div>
+    <label for="nome" id="labelNome">Nome Completo</label>
+    <div class="input-with-icon">
+        <i class="fas fa-user"></i>
+        <input type="text" id="inputNome" name="nome" placeholder="Seu nome completo" required>
+    </div>
+</div>
                 
                 <div class="form-group">
                     <label for="email">Email</label>
@@ -606,27 +606,46 @@
 </div>
 
 <script>
-    // Seleção de tabs
     function selectTab(tipo) {
-        // Atualizar tabs visuais
+        // 1. Elementos das Abas e Campos
         const tabAluno = document.getElementById('tabAluno');
         const tabEmpresa = document.getElementById('tabEmpresa');
         const camposAluno = document.getElementById('camposAluno');
         const camposEmpresa = document.getElementById('camposEmpresa');
         const tipoInput = document.getElementById('tipo_usuario');
         
+        // 2. Elementos do Nome (Para mudar o texto dinamicamente)
+        // Certifique-se que você adicionou id="labelNome" e id="inputNome" no HTML!
+        const labelNome = document.getElementById('labelNome');
+        const inputNome = document.getElementById('inputNome');
+        
         if (tipo === 'aluno') {
+            // Visual das Abas
             tabAluno.classList.add('active');
             tabEmpresa.classList.remove('active');
+            
+            // Campos específicos
             camposAluno.classList.remove('hidden');
             camposEmpresa.classList.add('hidden');
             tipoInput.value = 'aluno';
+
+            // MUDANÇA DE TEXTO: ALUNO
+            if(labelNome) labelNome.innerText = "Nome Completo";
+            if(inputNome) inputNome.placeholder = "Seu nome completo";
+
         } else {
+            // Visual das Abas
             tabAluno.classList.remove('active');
             tabEmpresa.classList.add('active');
+            
+            // Campos específicos
             camposAluno.classList.add('hidden');
             camposEmpresa.classList.remove('hidden');
             tipoInput.value = 'empresa';
+
+            // MUDANÇA DE TEXTO: EMPRESA
+            if(labelNome) labelNome.innerText = "Nome da Empresa (Razão Social)";
+            if(inputNome) inputNome.placeholder = "Ex: Tech Solutions Ltda";
         }
     }
     

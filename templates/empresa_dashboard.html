@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel da Empresa - Publicar Vaga</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #2563eb; --sidebar-bg: #1e293b; --bg: #f1f5f9; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { display: flex; background: var(--bg); min-height: 100vh; }
+        
+        .sidebar { width: 260px; background: var(--sidebar-bg); color: white; padding: 20px; position: fixed; height: 100%; }
+        .logo { font-size: 22px; font-weight: bold; margin-bottom: 40px; color: #60a5fa; display: flex; align-items: center; gap: 10px; }
+        .menu a { display: flex; align-items: center; gap: 12px; padding: 15px; color: #94a3b8; text-decoration: none; border-radius: 8px; margin-bottom: 5px; transition: 0.3s; }
+        .menu a:hover, .menu a.active { background: rgba(255,255,255,0.1); color: white; }
+        
+        .main { margin-left: 260px; padding: 40px; width: 100%; }
+        
+        .grid-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        
+        /* Formulário */
+        .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .card h2 { margin-bottom: 20px; color: #1e293b; font-size: 20px; }
+        
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 14px; color: #475569; }
+        input, select, textarea { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 14px; }
+        input:focus, textarea:focus { border-color: var(--primary); outline: none; }
+        
+        .btn-submit { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        .btn-submit:hover { background: #1d4ed8; }
+
+        /* Lista de Vagas */
+        .vaga-item { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .vaga-info h4 { margin-bottom: 5px; color: #334155; }
+        .vaga-info p { font-size: 12px; color: #64748b; }
+        .btn-delete { color: #ef4444; text-decoration: none; font-size: 14px; padding: 5px 10px; border: 1px solid #ef4444; border-radius: 6px; }
+        .btn-delete:hover { background: #ef4444; color: white; }
+        
+        .alert { padding: 15px; border-radius: 8px; margin-bottom: 20px; background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo"><i class="fas fa-briefcase"></i> Área Empresa</div>
+        <nav class="menu">
+            <a href="#" class="active"><i class="fas fa-plus-circle"></i> Publicar Vagas</a>
+            <a href="/perfil"><i class="fas fa-building"></i> Meu Perfil</a>
+            <a href="/"><i class="fas fa-globe"></i> Ver Site</a>
+            <a href="/logout" style="color: #ef4444; margin-top: auto;"><i class="fas fa-sign-out-alt"></i> Sair</a>
+        </nav>
+    </div>
+
+    <div class="main">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="grid-layout">
+            <div class="card">
+                <h2><i class="fas fa-pen"></i> Criar Nova Vaga</h2>
+                <form method="POST">
+                    <div class="form-group">
+                        <label>Título da Vaga</label>
+                        <input type="text" name="titulo" placeholder="Ex: Desenvolvedor Python Júnior" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Área</label>
+                        <select name="area" required>
+                            <option value="ti">Tecnologia (TI)</option>
+                            <option value="adm">Administração</option>
+                            <option value="rh">Recursos Humanos</option>
+                            <option value="mkt">Marketing</option>
+                            <option value="eng">Engenharia</option>
+                        </select>
+                    </div>
+
+                    <div class="grid-layout" style="gap: 15px;">
+                        <div class="form-group">
+                            <label>Salário / Bolsa</label>
+                            <input type="text" name="salario" placeholder="Ex: R$ 1.500,00">
+                        </div>
+                        <div class="form-group">
+                            <label>Modelo</label>
+                            <select name="tipo">
+                                <option value="Presencial">Presencial</option>
+                                <option value="Remoto">Remoto</option>
+                                <option value="Híbrido">Híbrido</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Localização</label>
+                        <input type="text" name="localizacao" placeholder="Ex: São Paulo - SP">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Benefícios</label>
+                        <input type="text" name="beneficios" placeholder="Ex: VR, VT, Gympass">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Descrição Completa</label>
+                        <textarea name="descricao" rows="5" placeholder="Descreva as atividades e requisitos..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-submit">Publicar Vaga Agora</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-list"></i> Minhas Vagas Publicadas</h2>
+                
+                {% for vaga in vagas %}
+                <div class="vaga-item">
+                    <div class="vaga-info">
+                        <h4>{{ vaga.titulo }}</h4>
+                        <p><i class="fas fa-map-marker-alt"></i> {{ vaga.localizacao }} • {{ vaga.data_criacao.strftime('%d/%m') }}</p>
+                    </div>
+                    <a href="/vaga/excluir/{{ vaga.id }}" class="btn-delete" onclick="return confirm('Tem certeza?')"><i class="fas fa-trash"></i></a>
+                </div>
+                {% else %}
+                    <p style="color: #94a3b8; text-align: center; margin-top: 50px;">Você ainda não publicou nenhuma vaga.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</body>
+</html>

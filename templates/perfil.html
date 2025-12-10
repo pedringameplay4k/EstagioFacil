@@ -114,14 +114,16 @@
     <div class="container">
         <aside class="profile-card">
             <div class="avatar-container">
-                {% if usuario.foto_perfil %}
-                    <img src="{{ url_for('static', filename='uploads/' + usuario.foto_perfil) }}" 
-                         onerror="this.src='/static/img/default-avatar.png'; this.onerror=null; this.parentNode.innerHTML='<div class=\'avatar-placeholder\'>{{ usuario.nome[0]|upper }}</div>'" 
-                         class="avatar" alt="Foto de Perfil">
-                {% else %}
-                    <div class="avatar-placeholder">{{ usuario.nome[0]|upper }}</div>
-                {% endif %}
-            </div>
+    {% if usuario.foto_perfil %}
+        <img src="{{ url_for('uploaded_file', filename=usuario.foto_perfil) }}" 
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" 
+             class="avatar" alt="Foto de Perfil">
+        
+        <div class="avatar-placeholder" style="display: none;">{{ usuario.nome[0]|upper }}</div>
+    {% else %}
+        <div class="avatar-placeholder">{{ usuario.nome[0]|upper }}</div>
+    {% endif %}
+</div>
             
             <h1 class="user-name">{{ usuario.nome }}</h1>
             <span class="user-type">{{ usuario.tipo|capitalize }}</span>

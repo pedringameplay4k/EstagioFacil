@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 import os
 from werkzeug.utils import secure_filename
@@ -43,6 +43,24 @@ class Usuario(db.Model):
     data_criacao = db.Column(db.DateTime, server_default=db.func.now())
     data_atualizacao = db.Column(db.DateTime, server_default=db.func.now(), onupdate=db.func.now())
 
+
+    # --- Adicione isso ABAIXO da class Usuario no app.py ---
+
+class Vaga(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    titulo = db.Column(db.String(100), nullable=False)
+    descricao = db.Column(db.Text, nullable=False)
+    salario = db.Column(db.String(50))
+    localizacao = db.Column(db.String(100))
+    tipo = db.Column(db.String(50)) # Presencial, Remoto, Híbrido
+    beneficios = db.Column(db.Text)
+    area = db.Column(db.String(50)) # TI, ADM, RH...
+    
+    # Relacionamento: Quem criou a vaga?
+    empresa_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    empresa = db.relationship('Usuario', backref=db.backref('vagas', lazy=True))
+    
+    data_criacao = db.Column(db.DateTime, server_default=db.func.now())
 # Função auxiliar para verificar extensão do ficheiro
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -51,11 +69,12 @@ def allowed_file(filename):
 
 @app.route('/')
 def home():
-    # Pega o nome do usuário se estiver logado, senão retorna None
     user_name = session.get('user_name') if 'user_id' in session else None
     
     # Renderiza o index.html (que agora tem o código das vagas)
-    return render_template('index.html', user_name=user_name, session=session)
+    vagas = Vaga.query.order_by(Vaga.data_criacao.desc()).all()
+    
+    return render_template('index.html', user_name=user_name, session=session, vagas=vagas)
 
 @app.route('/cadastro', methods=['GET', 'POST'])
 def cadastro():
@@ -158,13 +177,58 @@ def login():
             
     return render_template('login.html')
 
-@app.route('/empresa/dashboard')
+@app.route('/empresa/dashboard', methods=['GET', 'POST'])
 def empresa_dashboard():
+    # Segurança
     if 'user_type' not in session or session['user_type'] != 'empresa':
-        flash('Acesso não autorizado.', 'warning')
+        flash('Acesso restrito para empresas.', 'warning')
         return redirect(url_for('login'))
     
-    return render_template('empresa_dashboard.html', user_name=session.get('user_name'))
+    # SE FOR POST: SALVAR NOVA VAGA
+    if request.method == 'POST':
+        titulo = request.form.get('titulo')
+        descricao = request.form.get('descricao')
+        salario = request.form.get('salario')
+        localizacao = request.form.get('localizacao')
+        tipo = request.form.get('tipo')
+        area = request.form.get('area')
+        beneficios = request.form.get('beneficios')
+        
+        nova_vaga = Vaga(
+            titulo=titulo,
+            descricao=descricao,
+            salario=salario,
+            localizacao=localizacao,
+            tipo=tipo,
+            area=area,
+            beneficios=beneficios,
+            empresa_id=session['user_id'] # Pega o ID da empresa logada
+        )
+        
+        db.session.add(nova_vaga)
+        db.session.commit()
+        flash('Vaga publicada com sucesso!', 'success')
+        return redirect(url_for('empresa_dashboard'))
+
+    # SE FOR GET: MOSTRAR AS VAGAS DESSA EMPRESA
+    minhas_vagas = Vaga.query.filter_by(empresa_id=session['user_id']).order_by(Vaga.data_criacao.desc()).all()
+    
+    return render_template('empresa_dashboard.html', 
+                         user_name=session.get('user_name'),
+                         vagas=minhas_vagas)
+
+@app.route('/vaga/excluir/<int:id>')
+def excluir_vaga(id):
+    if 'user_id' not in session: return redirect(url_for('login'))
+    
+    vaga = Vaga.query.get(id)
+    # Só deixa excluir se a vaga for da própria empresa
+    if vaga and vaga.empresa_id == session['user_id']:
+        db.session.delete(vaga)
+        db.session.commit()
+        flash('Vaga removida.', 'success')
+    
+    return redirect(url_for('empresa_dashboard'))
 
 @app.route('/aluno/dashboard')
 def aluno_dashboard():
@@ -314,6 +378,7 @@ def atualizar_perfil():
                 return redirect(url_for('perfil'))
 
         db.session.commit()
+        session['user_name'] = usuario.nome
         flash('Perfil atualizado com sucesso!', 'success')
     
     return redirect(url_for('perfil'))
@@ -508,6 +573,7 @@ with app.app_context():
         db.session.commit()
         print("Banco de dados recriado e admin criado.")
 
+# Rota para exibir fotos de perfil e currículos
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
