@@ -53,18 +53,6 @@ Ideal para faculdades, escolas técnicas, cursos profissionalizantes e empresas 
 - Relatórios detalhados (já implementados)  
 - Visualização geral das atividades na plataforma  
 
----
-
-## 📱 Interface (Preview)
-
-> *(Adicione imagens depois)*  
-- 🖼️ Home  
-- 🖼️ Dashboards  
-- 🖼️ Sistema de vagas  
-- 🖼️ Relatórios do administrador  
-
----
-
 ## 🛠️ Tecnologias Utilizadas
 
 **Back-end**
